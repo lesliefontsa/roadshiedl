@@ -1,0 +1,564 @@
+{% extends 'backoffice/base_backoffice.html' %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="/travel/admin-backoffice/">Backoffice</a></li>
+<li class="breadcrumb-item active">Voyages</li>
+{% endblock %}
+
+{% block content %}
+<style>
+  .trip-card {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    overflow: hidden;
+  }
+  .trip-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+  }
+  .route-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 10px 0;
+  }
+  .route-arrow {
+    color: #007bff;
+    margin: 0 10px;
+    font-size: 1.2em;
+  }
+  .price-tag {
+    background: linear-gradient(135deg, #28a745, #20c997);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 20px;
+    font-weight: bold;
+  }
+  .status-badge {
+    font-size: 0.8em;
+    padding: 4px 8px;
+  }
+  .trip-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 15px;
+    margin: -15px -15px 15px -15px;
+  }
+</style>
+
+<div class="container-fluid">
+  <!-- Page Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2><i class="fas fa-route text-primary"></i> Gestion des Voyages</h2>
+      <p class="text-muted mb-0">Planifiez et gérez vos itinéraires avec prix en FCFA</p>
+    </div>
+    <div>
+      <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addTripModal">
+        <i class="fas fa-plus"></i> Créer un Voyage
+      </button>
+    </div>
+  </div>
+
+  <!-- Statistiques des Voyages -->
+  <div class="row mb-4">
+    <div class="col-md-3">
+      <div class="card bg-primary text-white">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h4>{{ total_trips|default:0 }}</h4>
+              <p class="mb-0">Total Voyages</p>
+            </div>
+            <i class="fas fa-route fa-2x opacity-75"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card bg-warning text-dark">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h4>{{ active_trips|default:0 }}</h4>
+              <p class="mb-0">Voyages Actifs</p>
+            </div>
+            <i class="fas fa-clock fa-2x opacity-75"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card bg-success text-white">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h4>{{ completed_trips|default:0 }}</h4>
+              <p class="mb-0">Terminés</p>
+            </div>
+            <i class="fas fa-check-circle fa-2x opacity-75"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card bg-info text-white">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h4>{{ avg_price_simple|default:0|floatformat:0 }} FCFA</h4>
+              <p class="mb-0">Prix Moyen</p>
+            </div>
+            <i class="fas fa-money-bill-alt fa-2x opacity-75"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Grille des Voyages -->
+  <div class="row" id="tripsGrid">
+    <!-- Formulaire d'édition si en mode édition -->
+    {% if edit_trip %}
+    <div class="col-md-6 col-lg-4 mb-4">
+      <div class="card trip-card border-warning">
+        <div class="card-header bg-warning text-dark">
+          <h5 class="mb-0"><i class="fas fa-edit"></i> Modifier le Voyage</h5>
+        </div>
+        <div class="card-body">
+          <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="edit_id" value="{{ edit_trip.id }}">
+            
+            <div class="mb-3">
+              <label class="form-label">Numéro de voyage</label>
+              <input class="form-control" name="trip_number" value="{{ edit_trip.trip_number }}" required>
+            </div>
+            
+            <div class="row">
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label class="form-label">Ville de départ</label>
+                  <input class="form-control" name="departure_city" value="{{ edit_trip.departure_city }}" required>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label class="form-label">Ville d'arrivée</label>
+                  <input class="form-control" name="arrival_city" value="{{ edit_trip.arrival_city }}" required>
+                </div>
+              </div>
+            </div>
+            
+            <div class="row">
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label class="form-label">Date de départ</label>
+                  <input class="form-control" name="date" type="date" value="{{ edit_trip.date|date:'Y-m-d' }}" required>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label class="form-label">Heure de départ</label>
+                  <input class="form-control" name="departure_time" type="time" value="{{ edit_trip.departure_time|time:'H:i' }}" required>
+                </div>
+              </div>
+            </div>
+            
+            <div class="mb-3">
+              <label class="form-label">Heure d'arrivée (optionnel)</label>
+              <input class="form-control" name="arrival_time" type="time" value="{% if edit_trip.arrival_time %}{{ edit_trip.arrival_time|time:'H:i' }}{% endif %}">
+            </div>
+            
+            <div class="row">
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label class="form-label">Bus</label>
+                  <select class="form-control" name="bus_id" required>
+                    <option value="">Sélectionner un bus</option>
+                    {% for bus in buses %}
+                    <option value="{{ bus.id }}" {% if bus.id == edit_trip.bus.id %}selected{% endif %}>
+                      {{ bus.bus_number }} - {{ bus.bus_model }}
+                    </option>
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label class="form-label">Chauffeur (optionnel)</label>
+                  <select class="form-control" name="driver_id">
+                    <option value="">Sélectionner un chauffeur</option>
+                    {% for driver in drivers %}
+                    <option value="{{ driver.id }}" {% if edit_trip.driver and driver.id == edit_trip.driver.id %}selected{% endif %}>
+                      {{ driver.get_full_name|default:driver.username }}
+                    </option>
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+            </div>
+            
+            <div class="row">
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label class="form-label">Prix aller simple (FCFA)</label>
+                  <input class="form-control" name="price_simple" type="number" min="0" value="{{ edit_trip.price_simple }}" required>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label class="form-label">Prix aller-retour (FCFA)</label>
+                  <input class="form-control" name="price_return" type="number" min="0" value="{{ edit_trip.price_return }}" required>
+                </div>
+              </div>
+            </div>
+            
+            <div class="mb-3">
+              <label class="form-label">Places maximum</label>
+              <input class="form-control" name="max_seats" type="number" min="1" value="{{ edit_trip.max_seats }}">
+              <div class="form-text">Si vide, utilisera la capacité du bus</div>
+            </div>
+            
+            <div class="mb-3">
+              <label class="form-label">Notes</label>
+              <textarea class="form-control" name="notes" rows="3">{{ edit_trip.notes }}</textarea>
+            </div>
+            
+            <div class="d-grid gap-2">
+              <button class="btn btn-warning" type="submit">
+                <i class="fas fa-save"></i> Enregistrer
+              </button>
+              <a href="/travel/admin-backoffice/trips/" class="btn btn-outline-secondary">
+                <i class="fas fa-times"></i> Annuler
+              </a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    {% for trip in trips %}
+    <div class="col-md-6 col-lg-4 mb-4">
+      <div class="card trip-card h-100">
+        <div class="trip-header">
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <h6 class="mb-1">{{ trip.trip_number }}</h6>
+              <small class="opacity-75">{{ trip.date|date:"d/m/Y" }} à {{ trip.departure_time|time:"H:i" }}</small>
+            </div>
+            <span class="badge bg-light text-dark status-badge">
+              {% if trip.status == 'programmed' %}Programmé
+              {% elif trip.status == 'boarding' %}Embarquement
+              {% elif trip.status == 'in_transit' %}En cours
+              {% elif trip.status == 'completed' %}Terminé
+              {% elif trip.status == 'cancelled' %}Annulé
+              {% elif trip.status == 'delayed' %}Retardé
+              {% endif %}
+            </span>
+          </div>
+        </div>
+        
+        <div class="card-body">
+          <!-- Itinéraire -->
+          <div class="route-indicator">
+            <div class="text-center">
+              <strong>{{ trip.departure_city }}</strong>
+            </div>
+            <div class="route-arrow">
+              <i class="fas fa-arrow-right"></i>
+            </div>
+            <div class="text-center">
+              <strong>{{ trip.arrival_city }}</strong>
+            </div>
+          </div>
+          
+          <!-- Prix en FCFA -->
+          <div class="text-center mb-3">
+            <div class="row">
+              <div class="col-6">
+                <div class="price-tag mb-2">
+                  <small>Aller simple</small><br>
+                  <strong>{{ trip.price_simple|floatformat:0 }} FCFA</strong>
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="price-tag mb-2" style="background: linear-gradient(135deg, #ffc107, #fd7e14);">
+                  <small>Aller-retour</small><br>
+                  <strong>{{ trip.price_return|floatformat:0 }} FCFA</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Détails du voyage -->
+          <div class="row text-start small">
+            <div class="col-12 mb-2">
+              <small class="text-muted">Bus:</small><br>
+              <small><i class="fas fa-bus text-primary"></i> {{ trip.bus.bus_number }} - {{ trip.bus.bus_model }}</small>
+            </div>
+            <div class="col-12 mb-2">
+              <small class="text-muted">Chauffeur:</small><br>
+              <small>
+                {% if trip.driver %}
+                  <i class="fas fa-user text-info"></i> {{ trip.driver.get_full_name|default:trip.driver.username }}
+                {% else %}
+                  <i class="fas fa-user-slash text-muted"></i> Non assigné
+                {% endif %}
+              </small>
+            </div>
+            <div class="col-6">
+              <small class="text-muted">Places:</small><br>
+              <small><i class="fas fa-users text-warning"></i> {{ trip.max_seats|default:trip.bus.total_seats }}</small>
+            </div>
+            <div class="col-6">
+              <small class="text-muted">Arrivée:</small><br>
+              <small>
+                {% if trip.arrival_time %}
+                  <i class="fas fa-clock text-success"></i> {{ trip.arrival_time|time:"H:i" }}
+                {% else %}
+                  <i class="fas fa-clock text-muted"></i> Non définie
+                {% endif %}
+              </small>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card-footer bg-transparent">
+          <div class="btn-group w-100" role="group">
+            <a href="?edit={{ trip.id }}" class="btn btn-outline-primary btn-sm">
+              <i class="fas fa-edit"></i> Éditer
+            </a>
+            <button class="btn btn-outline-info btn-sm" data-bs-toggle="modal" data-bs-target="#viewTripModal{{ trip.id }}">
+              <i class="fas fa-eye"></i> Voir
+            </button>
+            <button class="btn btn-outline-danger btn-sm" onclick="confirmDeleteTrip('{{ trip.id }}', '{{ trip.trip_number }}')">
+              <i class="fas fa-trash"></i> Supprimer
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+      <div class="text-center py-5">
+        <i class="fas fa-route fa-4x text-muted mb-3"></i>
+        <h4>Aucun voyage programmé</h4>
+        <p class="text-muted">Commencez par créer votre premier voyage.</p>
+        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addTripModal">
+          <i class="fas fa-plus"></i> Créer le premier voyage
+        </button>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Modal Créer Voyage -->
+<div class="modal fade" id="addTripModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="fas fa-plus text-success"></i> Créer un Nouveau Voyage
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="post">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label">Numéro de voyage *</label>
+                <input class="form-control" name="trip_number" placeholder="Ex: YA-001-240915" required>
+                <div class="form-text">Format suggéré: [Ligne]-[Bus]-[Date]</div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label">Date de départ *</label>
+                <input class="form-control" name="date" type="date" required>
+              </div>
+            </div>
+          </div>
+          
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label">Ville de départ *</label>
+                <input class="form-control" name="departure_city" placeholder="Ex: Yaoundé" required>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label">Ville d'arrivée *</label>
+                <input class="form-control" name="arrival_city" placeholder="Ex: Douala" required>
+              </div>
+            </div>
+          </div>
+          
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label">Heure de départ *</label>
+                <input class="form-control" name="departure_time" type="time" required>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label">Heure d'arrivée (optionnel)</label>
+                <input class="form-control" name="arrival_time" type="time">
+              </div>
+            </div>
+          </div>
+          
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label">Bus *</label>
+                <select class="form-control" name="bus_id" required>
+                  <option value="">Sélectionner un bus</option>
+                  {% for bus in buses %}
+                  <option value="{{ bus.id }}">{{ bus.bus_number }} - {{ bus.bus_model }} ({{ bus.total_seats }} places)</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label">Chauffeur (optionnel)</label>
+                <select class="form-control" name="driver_id">
+                  <option value="">Sélectionner un chauffeur</option>
+                  {% for driver in drivers %}
+                  <option value="{{ driver.id }}">{{ driver.get_full_name|default:driver.username }}</option>
+                  {% endfor %}
+                </select>
+                <div class="form-text">Si vide, utilisera le chauffeur du bus</div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label">Prix aller simple (FCFA) *</label>
+                <input class="form-control" name="price_simple" type="number" min="0" placeholder="Ex: 15000" required>
+                <div class="form-text">Prix en Francs CFA</div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label">Prix aller-retour (FCFA) *</label>
+                <input class="form-control" name="price_return" type="number" min="0" placeholder="Ex: 25000" required>
+                <div class="form-text">Prix en Francs CFA</div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="mb-3">
+            <label class="form-label">Places maximum</label>
+            <input class="form-control" name="max_seats" type="number" min="1" placeholder="Laissez vide pour utiliser la capacité du bus">
+            <div class="form-text">Nombre de places disponibles pour ce voyage</div>
+          </div>
+          
+          <div class="mb-3">
+            <label class="form-label">Notes</label>
+            <textarea class="form-control" name="notes" rows="3" placeholder="Informations complémentaires sur le voyage..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+          <button type="submit" class="btn btn-success">
+            <i class="fas fa-save"></i> Créer le Voyage
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modales de Détail pour chaque Voyage -->
+{% for trip in trips %}
+<div class="modal fade" id="viewTripModal{{ trip.id }}" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="fas fa-route text-primary"></i> Détails du Voyage {{ trip.trip_number }}
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row">
+          <div class="col-md-6">
+            <h6><i class="fas fa-info-circle"></i> Informations Générales</h6>
+            <table class="table table-sm">
+              <tr><td><strong>Numéro:</strong></td><td>{{ trip.trip_number }}</td></tr>
+              <tr><td><strong>Itinéraire:</strong></td><td>{{ trip.departure_city }} → {{ trip.arrival_city }}</td></tr>
+              <tr><td><strong>Date:</strong></td><td>{{ trip.date|date:"d/m/Y" }}</td></tr>
+              <tr><td><strong>Départ:</strong></td><td>{{ trip.departure_time|time:"H:i" }}</td></tr>
+              <tr><td><strong>Arrivée:</strong></td><td>{{ trip.arrival_time|time:"H:i"|default:"Non définie" }}</td></tr>
+              <tr><td><strong>Statut:</strong></td><td>
+                <span class="badge bg-secondary">
+                  {% if trip.status == 'programmed' %}Programmé
+                  {% elif trip.status == 'boarding' %}Embarquement
+                  {% elif trip.status == 'in_transit' %}En cours
+                  {% elif trip.status == 'completed' %}Terminé
+                  {% elif trip.status == 'cancelled' %}Annulé
+                  {% elif trip.status == 'delayed' %}Retardé
+                  {% endif %}
+                </span>
+              </td></tr>
+            </table>
+          </div>
+          <div class="col-md-6">
+            <h6><i class="fas fa-money-bill-alt"></i> Tarification (FCFA)</h6>
+            <table class="table table-sm">
+              <tr><td><strong>Aller simple:</strong></td><td><span class="badge bg-success">{{ trip.price_simple|floatformat:0 }} FCFA</span></td></tr>
+              <tr><td><strong>Aller-retour:</strong></td><td><span class="badge bg-warning text-dark">{{ trip.price_return|floatformat:0 }} FCFA</span></td></tr>
+            </table>
+            
+            <h6><i class="fas fa-cogs"></i> Logistique</h6>
+            <table class="table table-sm">
+              <tr><td><strong>Bus:</strong></td><td>{{ trip.bus.bus_number }} - {{ trip.bus.bus_model }}</td></tr>
+              <tr><td><strong>Chauffeur:</strong></td><td>{{ trip.driver.get_full_name|default:trip.driver.username|default:"Non assigné" }}</td></tr>
+              <tr><td><strong>Places max:</strong></td><td>{{ trip.max_seats|default:trip.bus.total_seats }}</td></tr>
+              <tr><td><strong>Créé par:</strong></td><td>{{ trip.created_by.get_full_name|default:trip.created_by.username }}</td></tr>
+              <tr><td><strong>Créé le:</strong></td><td>{{ trip.created_at|date:"d/m/Y H:i" }}</td></tr>
+            </table>
+          </div>
+        </div>
+        
+        {% if trip.notes %}
+        <div class="mt-3">
+          <h6><i class="fas fa-sticky-note"></i> Notes</h6>
+          <div class="border rounded p-3 bg-light">
+            {{ trip.notes|linebreaks }}
+          </div>
+        </div>
+        {% endif %}
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+        <a href="?edit={{ trip.id }}" class="btn btn-primary">
+          <i class="fas fa-edit"></i> Modifier
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endfor %}
+
+<script>
+function confirmDeleteTrip(tripId, tripNumber) {
+    if (confirm(`Êtes-vous sûr de vouloir supprimer le voyage ${tripNumber} ?\n\nCette action est irréversible.`)) {
+        window.location.href = `/travel/admin-backoffice/trips/delete/${tripId}/`;
+    }
+}
+</script>
+
+{% endblock %}

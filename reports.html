@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rapports Orange Money - RoadShield</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-light">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-shield-alt"></i> RoadShield - Rapports Paiements
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/admin-dashboard/">← Retour Dashboard</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-4">
+        <!-- Statistiques générales -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card text-white bg-success">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h6>Revenus Aujourd'hui</h6>
+                                <h4 id="todayRevenue">0 XAF</h4>
+                            </div>
+                            <i class="fas fa-money-bill-wave fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-white bg-info">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h6>Transactions Orange Money</h6>
+                                <h4 id="orangeTransactions">0</h4>
+                            </div>
+                            <i class="fas fa-mobile-alt fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-white bg-warning">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h6>Taux de Réussite</h6>
+                                <h4 id="successRate">0%</h4>
+                            </div>
+                            <i class="fas fa-check-circle fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-white bg-danger">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h6>Solde Orange Money</h6>
+                                <h4 id="orangeBalance">0 XAF</h4>
+                            </div>
+                            <i class="fas fa-wallet fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Graphiques -->
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-chart-line"></i> Évolution des Paiements (7 derniers jours)</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="paymentsChart" height="100"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-chart-pie"></i> Répartition des Paiements</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="paymentMethodsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Transactions récentes -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5><i class="fas fa-list"></i> Transactions Récentes</h5>
+                <button class="btn btn-primary btn-sm" onclick="refreshTransactions()">
+                    <i class="fas fa-sync-alt"></i> Actualiser
+                </button>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>ID Transaction</th>
+                                <th>Client</th>
+                                <th>Route</th>
+                                <th>Montant</th>
+                                <th>Méthode</th>
+                                <th>Statut</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody id="transactionsTable">
+                            <tr>
+                                <td colspan="7" class="text-center">
+                                    <div class="spinner-border" role="status">
+                                        <span class="visually-hidden">Chargement...</span>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        class PaymentReports {
+            constructor() {
+                this.apiBaseUrl = 'http://localhost:8002/api';
+                this.init();
+            }
+
+            async init() {
+                await this.loadReports();
+                await this.loadOrangeBalance();
+                this.setupCharts();
+                
+                // Actualiser toutes les 30 secondes
+                setInterval(() => this.loadReports(), 30000);
+            }
+
+            async loadReports() {
+                try {
+                    const response = await fetch(`${this.apiBaseUrl}/payment/reports/`);
+                    const data = await response.json();
+                    
+                    this.updateStatistics(data.summary);
+                    this.updateTransactionsTable(data.recent_transactions);
+                    this.updateCharts(data);
+                    
+                } catch (error) {
+                    console.error('Erreur de chargement des rapports:', error);
+                }
+            }
+
+            async loadOrangeBalance() {
+                try {
+                    const response = await fetch(`${this.apiBaseUrl}/payment/orange/balance/`);
+                    const data = await response.json();
+                    
+                    document.getElementById('orangeBalance').textContent = 
+                        new Intl.NumberFormat('fr-FR').format(data.balance) + ' XAF';
+                        
+                } catch (error) {
+                    console.error('Erreur de chargement du solde:', error);
+                }
+            }
+
+            updateStatistics(summary) {
+                document.getElementById('todayRevenue').textContent = 
+                    new Intl.NumberFormat('fr-FR').format(summary.total_today) + ' XAF';
+                document.getElementById('orangeTransactions').textContent = summary.transactions_today;
+                document.getElementById('successRate').textContent = summary.success_rate_today + '%';
+            }
+
+            updateTransactionsTable(transactions) {
+                const tbody = document.getElementById('transactionsTable');
+                tbody.innerHTML = '';
+
+                transactions.forEach(transaction => {
+                    const statusBadge = this.getStatusBadge(transaction.status);
+                    const row = `
+                        <tr>
+                            <td><code>${transaction.id}</code></td>
+                            <td>${transaction.customer_name}<br>
+                                <small class="text-muted">${transaction.customer_phone}</small>
+                            </td>
+                            <td>${transaction.route}</td>
+                            <td><strong>${new Intl.NumberFormat('fr-FR').format(transaction.amount)} XAF</strong></td>
+                            <td>
+                                <span class="badge bg-${transaction.payment_method === 'ORANGE_MONEY' ? 'warning' : 'secondary'}">
+                                    ${transaction.payment_method}
+                                </span>
+                            </td>
+                            <td>${statusBadge}</td>
+                            <td>${new Date(transaction.transaction_date).toLocaleString('fr-FR')}</td>
+                        </tr>
+                    `;
+                    tbody.innerHTML += row;
+                });
+            }
+
+            getStatusBadge(status) {
+                const badges = {
+                    'SUCCESS': '<span class="badge bg-success">Réussi</span>',
+                    'PENDING': '<span class="badge bg-warning">En attente</span>',
+                    'FAILED': '<span class="badge bg-danger">Échoué</span>'
+                };
+                return badges[status] || '<span class="badge bg-secondary">Inconnu</span>';
+            }
+
+            setupCharts() {
+                // Graphique des paiements dans le temps
+                const ctx1 = document.getElementById('paymentsChart').getContext('2d');
+                this.paymentsChart = new Chart(ctx1, {
+                    type: 'line',
+                    data: {
+                        labels: [],
+                        datasets: [{
+                            label: 'Orange Money',
+                            data: [],
+                            borderColor: '#ff7300',
+                            backgroundColor: 'rgba(255, 115, 0, 0.1)',
+                            tension: 0.4
+                        }, {
+                            label: 'Espèces',
+                            data: [],
+                            borderColor: '#28a745',
+                            backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return new Intl.NumberFormat('fr-FR').format(value) + ' XAF';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+
+                // Graphique des méthodes de paiement
+                const ctx2 = document.getElementById('paymentMethodsChart').getContext('2d');
+                this.methodsChart = new Chart(ctx2, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Orange Money', 'Espèces', 'Carte bancaire'],
+                        datasets: [{
+                            data: [65, 25, 10],
+                            backgroundColor: ['#ff7300', '#28a745', '#007bff']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true
+                    }
+                });
+            }
+
+            updateCharts(data) {
+                // Mettre à jour le graphique des paiements
+                const labels = data.daily_statistics.map(stat => stat.date).reverse();
+                const orangeData = data.daily_statistics.map(stat => stat.orange_money_amount).reverse();
+                const cashData = data.daily_statistics.map(stat => stat.cash_amount).reverse();
+
+                this.paymentsChart.data.labels = labels;
+                this.paymentsChart.data.datasets[0].data = orangeData;
+                this.paymentsChart.data.datasets[1].data = cashData;
+                this.paymentsChart.update();
+
+                // Mettre à jour le graphique des méthodes
+                const methodsData = data.payment_methods.map(method => method.percentage);
+                this.methodsChart.data.datasets[0].data = methodsData;
+                this.methodsChart.update();
+            }
+        }
+
+        function refreshTransactions() {
+            window.paymentReports.loadReports();
+        }
+
+        // Initialiser l'application
+        document.addEventListener('DOMContentLoaded', () => {
+            window.paymentReports = new PaymentReports();
+        });
+    </script>
+</body>
+</html>

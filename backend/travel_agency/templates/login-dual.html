@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RoadShield Travel - Connexion</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+        }
+        .login-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            overflow: hidden;
+            max-width: 900px;
+            width: 100%;
+        }
+        .login-header {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .login-tabs {
+            display: flex;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .login-tab {
+            flex: 1;
+            padding: 20px;
+            background: #f8f9fa;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+        .login-tab.active {
+            background: white;
+            color: #007bff;
+            border-bottom: 3px solid #007bff;
+        }
+        .login-tab:hover {
+            background: #e9ecef;
+        }
+        .login-content {
+            padding: 40px;
+        }
+        .btn-login {
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            border: none;
+            padding: 12px 0;
+            border-radius: 10px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,123,255,0.3);
+        }
+        .form-control {
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+            padding: 12px 15px;
+            transition: all 0.3s ease;
+        }
+        .form-control:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.2rem rgba(0,123,255,0.25);
+        }
+        .quick-login {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+        .quick-login h6 {
+            color: #6c757d;
+            margin-bottom: 10px;
+        }
+        .quick-btn {
+            background: none;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 5px 10px;
+            margin: 2px;
+            color: #007bff;
+            text-decoration: none;
+            font-size: 0.85em;
+            transition: all 0.2s ease;
+        }
+        .quick-btn:hover {
+            background: #007bff;
+            color: white;
+            text-decoration: none;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .role-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            opacity: 0.8;
+        }
+        .admin-theme {
+            color: #dc3545;
+        }
+        .client-theme {
+            color: #28a745;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-10">
+                <div class="login-container">
+                    <!-- Header -->
+                    <div class="login-header">
+                        <h2><i class="fas fa-bus me-2"></i>RoadShield Travel</h2>
+                        <p class="mb-0">Plateforme de Gestion des Voyages</p>
+                        <small class="text-muted">
+                            <button type="button" class="btn btn-link btn-sm text-muted p-0" onclick="clearStoredAuth()" title="Effacer les données de connexion">
+                                <i class="fas fa-refresh"></i>
+                            </button>
+                        </small>
+                    </div>
+
+                    <!-- Tabs -->
+                    <div class="login-tabs">
+                        <button class="login-tab active" onclick="switchTab('admin')">
+                            <i class="fas fa-user-shield me-2"></i>Connexion Administrateur
+                        </button>
+                        <button class="login-tab" onclick="switchTab('client')">
+                            <i class="fas fa-user me-2"></i>Connexion Client
+                        </button>
+                    </div>
+
+                    <!-- Content -->
+                    <div class="login-content">
+                        <!-- Admin Login -->
+                        <div class="tab-content active" id="admin-content">
+                            <div class="text-center mb-4">
+                                <i class="fas fa-user-shield role-icon admin-theme"></i>
+                                <h4 class="admin-theme">Espace Administrateur</h4>
+                                <p class="text-muted">Accès complet à la gestion des voyages, véhicules et chauffeurs</p>
+                            </div>
+                            
+                            <div id="adminAlert"></div>
+                            
+                            <form id="adminLoginForm">
+                                <div class="mb-3">
+                                    <label class="form-label">
+                                        <i class="fas fa-user me-2"></i>Nom d'utilisateur Admin
+                                    </label>
+                                    <input type="text" class="form-control" id="adminUsername" required placeholder="Entrez votre nom d'utilisateur">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">
+                                        <i class="fas fa-lock me-2"></i>Mot de passe
+                                    </label>
+                                    <input type="password" class="form-control" id="adminPassword" required placeholder="Entrez votre mot de passe">
+                                </div>
+                                
+                                <button type="submit" class="btn btn-login btn-danger w-100">
+                                    <i class="fas fa-sign-in-alt me-2"></i>Accéder à l'Administration
+                                </button>
+                            </form>
+
+                            <div class="quick-login">
+                                <h6><i class="fas fa-bolt"></i> Connexion Rapide Admin :</h6>
+                                <button class="quick-btn" onclick="quickLogin('admin', 'admin123', 'admin')">admin / admin123</button>
+                            </div>
+                        </div>
+
+                        <!-- Client Login -->
+                        <div class="tab-content" id="client-content">
+                            <div class="text-center mb-4">
+                                <i class="fas fa-user role-icon client-theme"></i>
+                                <h4 class="client-theme">Espace Client</h4>
+                                <p class="text-muted">Consultez les voyages disponibles et effectuez vos réservations</p>
+                            </div>
+                            
+                            <div id="clientAlert"></div>
+                            
+                            <form id="clientLoginForm">
+                                <div class="mb-3">
+                                    <label class="form-label">
+                                        <i class="fas fa-user me-2"></i>Nom d'utilisateur Client
+                                    </label>
+                                    <input type="text" class="form-control" id="clientUsername" required placeholder="Entrez votre nom d'utilisateur">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">
+                                        <i class="fas fa-lock me-2"></i>Mot de passe
+                                    </label>
+                                    <input type="password" class="form-control" id="clientPassword" required placeholder="Entrez votre mot de passe">
+                                </div>
+                                
+                                <button type="submit" class="btn btn-login btn-success w-100">
+                                    <i class="fas fa-sign-in-alt me-2"></i>Accéder à l'Espace Client
+                                </button>
+                            </form>
+
+                            <div class="quick-login">
+                                <h6><i class="fas fa-bolt"></i> Connexion Rapide Client :</h6>
+                                <button class="quick-btn" onclick="quickLogin('client1', 'client123', 'client')">client1 / client123</button>
+                                <button class="quick-btn" onclick="quickLogin('client2', 'client123', 'client')">client2 / client123</button>
+                                <button class="quick-btn" onclick="quickLogin('client3', 'client123', 'client')">client3 / client123</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function clearStoredAuth() {
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('userInfo');
+            showAlert('admin', 'Données de connexion effacées', 'success');
+            showAlert('client', 'Données de connexion effacées', 'success');
+        }
+
+        function switchTab(tabName) {
+            // Update tab buttons
+            document.querySelectorAll('.login-tab').forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Update content
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            document.getElementById(tabName + '-content').classList.add('active');
+        }
+
+        function showAlert(type, message, alertType = 'info') {
+            const alertContainer = document.getElementById(type + 'Alert');
+            const alertClass = alertType === 'error' ? 'alert-danger' : 
+                              alertType === 'success' ? 'alert-success' : 'alert-info';
+            
+            alertContainer.innerHTML = `
+                <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+        }
+
+        function quickLogin(username, password, type) {
+            if (type === 'admin') {
+                document.getElementById('adminUsername').value = username;
+                document.getElementById('adminPassword').value = password;
+                document.getElementById('adminLoginForm').dispatchEvent(new Event('submit'));
+            } else {
+                document.getElementById('clientUsername').value = username;
+                document.getElementById('clientPassword').value = password;
+                document.getElementById('clientLoginForm').dispatchEvent(new Event('submit'));
+            }
+        }
+
+        async function login(username, password, expectedRole) {
+            try {
+                const response = await fetch('/api/auth/login/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username: username,
+                        password: password
+                    })
+                });
+
+                console.log('Response status:', response.status);
+                console.log('Response headers:', response.headers);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                console.log('Response data:', data);
+                
+                if (data.status === 'success') {
+                    // Vérifier le rôle
+                    const isAdmin = data.user.is_staff;
+                    const isClient = !data.user.is_staff;
+                    
+                    if (expectedRole === 'admin' && !isAdmin) {
+                        showAlert('admin', 'Ce compte n\'est pas un compte administrateur.', 'error');
+                        return;
+                    }
+                    
+                    if (expectedRole === 'client' && !isClient) {
+                        showAlert('client', 'Ce compte n\'est pas un compte client.', 'error');
+                        return;
+                    }
+                    
+                    // Sauvegarder les données
+                    localStorage.setItem('authToken', data.token);
+                    localStorage.setItem('userInfo', JSON.stringify(data.user));
+                    
+                    // Redirection selon le rôle
+                    if (isAdmin) {
+                        showAlert('admin', 'Connexion réussie ! Redirection vers l\'administration...', 'success');
+                        setTimeout(() => {
+                            window.location.href = '/admin-backoffice/';
+                        }, 1500);
+                    } else {
+                        showAlert('client', 'Connexion réussie ! Redirection vers votre espace...', 'success');
+                        setTimeout(() => {
+                            window.location.href = '/client-dashboard/';
+                        }, 1500);
+                    }
+                } else {
+                    const alertType = expectedRole === 'admin' ? 'admin' : 'client';
+                    showAlert(alertType, data.message || 'Erreur de connexion', 'error');
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                const alertType = expectedRole === 'admin' ? 'admin' : 'client';
+                showAlert(alertType, `Erreur de connexion au serveur: ${error.message}`, 'error');
+            }
+        }
+
+        // Event listeners
+        document.getElementById('adminLoginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const username = document.getElementById('adminUsername').value;
+            const password = document.getElementById('adminPassword').value;
+            
+            // Afficher loading
+            const btn = this.querySelector('button[type="submit"]');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Connexion...';
+            btn.disabled = true;
+            
+            login(username, password, 'admin').finally(() => {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            });
+        });
+
+        document.getElementById('clientLoginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const username = document.getElementById('clientUsername').value;
+            const password = document.getElementById('clientPassword').value;
+            
+            // Afficher loading
+            const btn = this.querySelector('button[type="submit"]');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Connexion...';
+            btn.disabled = true;
+            
+            login(username, password, 'client').finally(() => {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            });
+        });
+
+        // Vérification automatique désactivée - l'utilisateur doit se connecter manuellement
+        // window.addEventListener('load', function() {
+        //     const token = localStorage.getItem('authToken');
+        //     const userInfo = localStorage.getItem('userInfo');
+        //     
+        //     if (token && userInfo) {
+        //         try {
+        //             const user = JSON.parse(userInfo);
+        //             if (user.is_staff) {
+        //                 window.location.href = '/admin-backoffice/';
+        //             } else {
+        //                 window.location.href = '/client-dashboard/';
+        //             }
+        //         } catch (e) {
+        //             // Ignore parsing errors
+        //         }
+        //     }
+        // });
+    </script>
+</body>
+</html>

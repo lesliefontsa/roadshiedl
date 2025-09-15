@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Admin - RoadShield Travel</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .sidebar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+        }
+        .nav-link:hover {
+            background-color: rgba(255,255,255,0.1);
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        .stats-card {
+            background: linear-gradient(135deg, var(--bs-primary) 0%, var(--bs-primary) 100%);
+            color: white;
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+        }
+        .stats-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100px;
+            height: 100px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+            transform: translate(30px, -30px);
+        }
+        .stats-card.bg-success { background: linear-gradient(135deg, #28a745 0%, #20c997 100%); }
+        .stats-card.bg-info { background: linear-gradient(135deg, #17a2b8 0%, #6f42c1 100%); }
+        .stats-card.bg-warning { background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%); }
+        .stats-card.bg-danger { background: linear-gradient(135deg, #dc3545 0%, #e83e8c 100%); }
+        
+        .page-header {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .badge-pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(0, 123, 255, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(0, 123, 255, 0); }
+        }
+        
+        .table th {
+            border-top: none;
+            border-bottom: 2px solid #dee2e6;
+            font-weight: 600;
+        }
+        
+        .progress-custom {
+            height: 8px;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="col-md-2 d-md-block bg-dark sidebar" style="min-height: 100vh;">
+                <div class="position-sticky pt-3">
+                    <div class="text-center text-white mb-4">
+                        <h5><i class="fas fa-shield-alt"></i> RoadShield</h5>
+                        <small>Admin Dashboard</small>
+                    </div>
+                    
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link text-white" href="/admin/">
+                                <i class="fas fa-tachometer-alt"></i> Vue d'ensemble
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-white" href="/travel/admin-backoffice/buses/">
+                                <i class="fas fa-bus"></i> Autobus
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-white" href="/travel/admin-backoffice/drivers/">
+                                <i class="fas fa-user-tie"></i> Chauffeurs
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-white" href="/travel/admin-backoffice/trips/">
+                                <i class="fas fa-route"></i> Voyages
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-white" href="/travel/admin-backoffice/alerts/">
+                                <i class="fas fa-exclamation-triangle"></i> Alertes
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-white" href="/travel/auth/logout/">
+                                <i class="fas fa-sign-out-alt"></i> Déconnexion
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- Main content -->
+            <main class="col-md-10 ms-sm-auto col-lg-10 px-4">
+                <!-- Page Header -->
+                <div class="page-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h1 class="h2 mb-1">
+                                <i class="fas fa-tachometer-alt text-primary"></i> 
+                                Dashboard Administrateur
+                            </h1>
+                            <p class="text-muted mb-0">Gérez votre flotte et surveillez les performances</p>
+                        </div>
+                        <div class="text-end">
+                            <div class="d-flex align-items-center">
+                                <img src="https://ui-avatars.com/api/?name={{ user.first_name }}+{{ user.last_name }}&background=667eea&color=fff&size=40" 
+                                     class="rounded-circle me-2" alt="Avatar">
+                                <div>
+                                    <strong>{{ user.first_name }} {{ user.last_name }}</strong>
+                                    <br><small class="text-muted">{{ user.username }}</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stats Cards -->
+                <div class="row mb-4">
+                    <div class="col-md-3 mb-3">
+                        <div class="card stats-card bg-primary">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h3 class="mb-1">{{ total_trips|default:0 }}</h3>
+                                        <p class="mb-0">Voyages Total</p>
+                                        <small class="opacity-75">
+                                            <i class="fas fa-arrow-up"></i> +12% ce mois
+                                        </small>
+                                    </div>
+                                    <div class="align-self-center">
+                                        <i class="fas fa-route fa-3x opacity-75"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3 mb-3">
+                        <div class="card stats-card bg-success">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h3 class="mb-1">{{ total_bookings|default:0 }}</h3>
+                                        <p class="mb-0">Réservations</p>
+                                        <small class="opacity-75">
+                                            <i class="fas fa-arrow-up"></i> +8% ce mois
+                                        </small>
+                                    </div>
+                                    <div class="align-self-center">
+                                        <i class="fas fa-ticket-alt fa-3x opacity-75"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3 mb-3">
+                        <div class="card stats-card bg-info">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h3 class="mb-1">{{ total_revenue|default:0 }}</h3>
+                                        <p class="mb-0">Revenus (FCFA)</p>
+                                        <small class="opacity-75">
+                                            <i class="fas fa-arrow-up"></i> +15% ce mois
+                                        </small>
+                                    </div>
+                                    <div class="align-self-center">
+                                        <i class="fas fa-money-bill-wave fa-3x opacity-75"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3 mb-3">
+                        <div class="card stats-card bg-warning">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h3 class="mb-1">{{ available_buses|default:0 }}</h3>
+                                        <p class="mb-0">Bus Disponibles</p>
+                                        <small class="opacity-75">
+                                            <i class="fas fa-bus"></i> Sur {{ total_buses|default:0 }} total
+                                        </small>
+                                    </div>
+                                    <div class="align-self-center">
+                                        <i class="fas fa-bus fa-3x opacity-75"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions & Recent Activity -->
+                <div class="row mb-4">
+                    <div class="col-md-8">
+                        <!-- Recent Bookings -->
+                        <div class="card">
+                            <div class="card-header bg-transparent">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-history text-primary"></i> 
+                                        Réservations Récentes
+                                    </h5>
+                                    <span class="badge bg-primary badge-pulse">Live</span>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Ticket</th>
+                                                <th>Client</th>
+                                                <th>Itinéraire</th>
+                                                <th>Places</th>
+                                                <th>Prix</th>
+                                                <th>Status</th>
+                                                <th>Date</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for booking in recent_bookings %}
+                                            <tr>
+                                                <td>
+                                                    <code class="bg-light px-2 py-1 rounded">
+                                                        {{ booking.ticket_number }}
+                                                    </code>
+                                                </td>
+                                                <td>
+                                                    <div class="d-flex align-items-center">
+                                                        <img src="https://ui-avatars.com/api/?name={{ booking.client.first_name }}+{{ booking.client.last_name }}&size=30" 
+                                                             class="rounded-circle me-2" alt="Client">
+                                                        {{ booking.client.first_name }} {{ booking.client.last_name }}
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <i class="fas fa-map-marker-alt text-success"></i> 
+                                                    {{ booking.trip.departure_city }} 
+                                                    <i class="fas fa-arrow-right mx-1"></i> 
+                                                    <i class="fas fa-map-marker-alt text-danger"></i> 
+                                                    {{ booking.trip.arrival_city }}
+                                                </td>
+                                                <td>
+                                                    <span class="badge bg-secondary">{{ booking.seats }} place{{ booking.seats|pluralize }}</span>
+                                                </td>
+                                                <td>
+                                                    <strong>{{ booking.total_price }} FCFA</strong>
+                                                </td>
+                                                <td>
+                                                    <span class="badge {% if booking.status == 'confirmed' %}bg-success{% elif booking.status == 'pending' %}bg-warning{% else %}bg-secondary{% endif %}">
+                                                        {{ booking.get_status_display }}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <small>{{ booking.booking_date|date:"d/m/Y H:i" }}</small>
+                                                </td>
+                                            </tr>
+                                            {% empty %}
+                                            <tr>
+                                                <td colspan="7" class="text-center py-4">
+                                                    <div class="text-muted">
+                                                        <i class="fas fa-inbox fa-3x mb-3"></i>
+                                                        <p>Aucune réservation trouvée</p>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <!-- Quick Actions -->
+                        <div class="card mb-3">
+                            <div class="card-header bg-transparent">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-bolt text-warning"></i> 
+                                    Actions Rapides
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-grid gap-2">
+                                    <a href="/travel/admin-backoffice/buses/" class="btn btn-outline-primary">
+                                        <i class="fas fa-bus"></i> Gérer les Bus
+                                    </a>
+                                    <a href="/travel/admin-backoffice/drivers/" class="btn btn-outline-success">
+                                        <i class="fas fa-user-tie"></i> Gérer les Chauffeurs
+                                    </a>
+                                    <a href="/travel/admin-backoffice/trips/" class="btn btn-outline-info">
+                                        <i class="fas fa-route"></i> Planifier un Voyage
+                                    </a>
+                                    <a href="/travel/admin-backoffice/alerts/" class="btn btn-outline-warning">
+                                        <i class="fas fa-exclamation-triangle"></i> Voir les Alertes
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- System Status -->
+                        <div class="card">
+                            <div class="card-header bg-transparent">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-heartbeat text-success"></i> 
+                                    État du Système
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <small>Capacité Bus</small>
+                                        <small>{{ available_buses|default:0 }}/{{ total_buses|default:1 }}</small>
+                                    </div>
+                                    <div class="progress progress-custom">
+                                        <div class="progress-bar bg-success" style="width: {% widthratio available_buses total_buses 100 %}%"></div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <small>Chauffeurs Actifs</small>
+                                        <small>{{ active_drivers|default:0 }}/{{ total_drivers|default:1 }}</small>
+                                    </div>
+                                    <div class="progress progress-custom">
+                                        <div class="progress-bar bg-info" style="width: {% widthratio active_drivers total_drivers 100 %}%"></div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-0">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <small>Réservations Aujourd'hui</small>
+                                        <small>{{ today_bookings|default:0 }}/{{ daily_target|default:50 }}</small>
+                                    </div>
+                                    <div class="progress progress-custom">
+                                        <div class="progress-bar bg-warning" style="width: {% widthratio today_bookings daily_target 100 %}%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

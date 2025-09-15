@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rapports - SomnoControl</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="index.html">
+                <i class="fas fa-car-side me-2"></i>
+                SomnoControl
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">Tableau de bord</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#vehicles">Véhicules</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#alerts">Alertes</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="rapports.html">Rapports</a>
+                    </li>
+                </ul>
+                <div class="navbar-nav">
+                    <span class="navbar-text me-3">
+                        <i class="fas fa-user-circle me-1"></i>
+                        Arthursente
+                    </span>
+                    <button class="btn btn-outline-light btn-sm">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="container-fluid mt-4">
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2><i class="fas fa-chart-bar me-2"></i>Rapports et Analyses</h2>
+                        <small class="text-muted">Dernière mise à jour: 27 juillet 2025, 02:16 UTC</small>
+                    </div>
+                    <div>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#generateReportModal">
+                            <i class="fas fa-plus me-2"></i>Nouveau Rapport
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter Section -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-filter me-2"></i>Filtres de Rapport</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <label class="form-label">Période</label>
+                                <select class="form-select" id="periodFilter">
+                                    <option value="today">Aujourd'hui</option>
+                                    <option value="week" selected>Cette semaine</option>
+                                    <option value="month">Ce mois</option>
+                                    <option value="quarter">Ce trimestre</option>
+                                    <option value="custom">Période personnalisée</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Type de rapport</label>
+                                <select class="form-select" id="reportType">
+                                    <option value="all">Tous les rapports</option>
+                                    <option value="drowsiness">Somnolence</option>
+                                    <option value="speed">Vitesse</option>
+                                    <option value="performance">Performance</option>
+                                    <option value="safety">Sécurité</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Véhicule</label>
+                                <select class="form-select" id="vehicleFilter">
+                                    <option value="all">Tous les véhicules</option>
+                                    <option value="TRK-001">TRK-001 (Jean Dupont)</option>
+                                    <option value="TRK-002">TRK-002 (Marie Martin)</option>
+                                    <option value="TRK-003">TRK-003 (Pierre Leroy)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">&nbsp;</label>
+                                <div class="d-grid">
+                                    <button class="btn btn-outline-primary" onclick="applyFilters()">
+                                        <i class="fas fa-search me-2"></i>Appliquer
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mt-3" id="customDateRange" style="display: none;">
+                            <div class="col-md-3">
+                                <label class="form-label">Date de début</label>
+                                <input type="date" class="form-control" id="startDate" value="2025-07-20">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Date de fin</label>
+                                <input type="date" class="form-control" id="endDate" value="2025-07-27">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="row mb-4">
+            <div class="col-md-2">
+                <div class="card text-center border-primary">
+                    <div class="card-body">
+                        <i class="fas fa-exclamation-triangle fa-2x text-warning mb-2"></i>
+                        <h4 class="text-primary">47</h4>
+                        <small class="text-muted">Alertes Totales</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="card text-center border-danger">
+                    <div class="card-body">
+                        <i class="fas fa-bed fa-2x text-danger mb-2"></i>
+                        <h4 class="text-danger">12</h4>
+                        <small class="text-muted">Somnolence Critique</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="card text-center border-warning">
+                    <div class="card-body">
+                        <i class="fas fa-tachometer-alt fa-2x text-warning mb-2"></i>
+                        <h4 class="text-warning">23</h4>
+                        <small class="text-muted">Excès de Vitesse</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="card text-center border-success">
+                    <div class="card-body">
+                        <i class="fas fa-clock fa-2x text-success mb-2"></i>
+                        <h4 class="text-success">168h</h4>
+                        <small class="text-muted">Temps de Conduite</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="card text-center border-info">
+                    <div class="card-body">
+                        <i class="fas fa-route fa-2x text-info mb-2"></i>
+                        <h4 class="text-info">2,847</h4>
+                        <small class="text-muted">Kilomètres</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="card text-center border-secondary">
+                    <div class="card-body">
+                        <i class="fas fa-percentage fa-2x text-secondary mb-2"></i>
+                        <h4 class="text-secondary">94.2%</h4>
+                        <small class="text-muted">Conformité</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Charts Section -->
+            <div class="col-lg-8">
+                <!-- Drowsiness Trend Chart -->
+                <div class="card mb-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Tendance des Incidents de Somnolence</h5>
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-outline-primary active" onclick="switchChart('daily')">Jour</button>
+                            <button class="btn btn-outline-primary" onclick="switchChart('weekly')">Semaine</button>
+                            <button class="btn btn-outline-primary" onclick="switchChart('monthly')">Mois</button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="drowsinessChart" style="height: 300px;"></canvas>
+                    </div>
+                </div>
+
+                <!-- Speed Violations Chart -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-tachometer-alt me-2"></i>Violations de Vitesse par Véhicule</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="speedChart" style="height: 250px;"></canvas>
+                    </div>
+                </div>
+
+                <!-- Performance Comparison -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-users me-2"></i>Comparaison Performance Chauffeurs</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Chauffeur</th>
+                                        <th>Véhicule</th>
+                                        <th>Heures Conduite</th>
+                                        <th>Incidents</th>
+                                        <th>Score Sécurité</th>
+                                        <th>Tendance</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <img src="https://via.placeholder.com/40x40/28a745/ffffff?text=JD" class="rounded-circle me-2" alt="Avatar">
+                                                <div>
+                                                    <strong>Jean Dupont</strong>
+                                                    <br><small class="text-muted">Expérience: 8 ans</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>TRK-001</td>
+                                        <td>
+                                            <span class="fw-bold">52h</span>
+                                            <br><small class="text-muted">Cette semaine</small>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-success">2</span>
+                                            <br><small class="text-muted">Mineurs</small>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="progress me-2" style="width: 80px; height: 8px;">
+                                                    <div class="progress-bar bg-success" style="width: 96%"></div>
+                                                </div>
+                                                <span class="text-success fw-bold">96%</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <i class="fas fa-arrow-up text-success"></i>
+                                            <small class="text-success">+2%</small>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <img src="https://via.placeholder.com/40x40/ffc107/000000?text=MM" class="rounded-circle me-2" alt="Avatar">
+                                                <div>
+                                                    <strong>Marie Martin</strong>
+                                                    <br><small class="text-muted">Expérience: 5 ans</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>TRK-002</td>
+                                        <td>
+                                            <span class="fw-bold">48h</span>
+                                            <br><small class="text-muted">Cette semaine</small>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-warning">7</span>
+                                            <br><small class="text-muted">Moyens</small>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="progress me-2" style="width: 80px; height: 8px;">
+                                                    <div class="progress-bar bg-warning" style="width: 87%"></div>
+                                                </div>
+                                                <span class="text-warning fw-bold">87%</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <i class="fas fa-arrow-down text-warning"></i>
+                                            <small class="text-warning">-3%</small>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <img src="https://via.placeholder.com/40x40/dc3545/ffffff?text=PL" class="rounded-circle me-2" alt="Avatar">
+                                                <div>
+                                                    <strong>Pierre Leroy</strong>
+                                                    <br><small class="text-muted">Expérience: 12 ans</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>TRK-003</td>
+                                        <td>
+                                            <span class="fw-bold">56h</span>
+                                            <br><small class="text-muted">Cette semaine</small>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-danger">15</span>
+                                            <br><small class="text-muted">Critiques</small>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="progress me-2" style="width: 80px; height: 8px;">
+                                                    <div class="progress-bar bg-danger" style="width: 73%"></div>
+                                                </div>
+                                                <span class="text-danger fw-bold">73%</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <i class="fas fa-arrow-down text-danger"></i>
+                                            <small class="text-danger">-8%</small>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reports Sidebar -->
+            <div class="col-lg-4">
+                <!-- Generated Reports -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-file-alt me-2"></i>Rapports Récents</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="report-item mb-3 p-3 border rounded">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h6 class="mb-0">Rapport Hebdomadaire</h6>
+                                <span class="badge bg-success">Complété</span>
+                            </div>
+                            <p class="text-muted small mb-2">Analyse complète des performances de la semaine du 20-27 juillet 2025</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">
+                                    <i class="fas fa-calendar me-1"></i>27 jul 2025, 02:16
+                                </small>
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-outline-primary" onclick="viewReport('weekly')">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="btn btn-outline-secondary" onclick="downloadReport('weekly')">
+                                        <i class="fas fa-download"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="report-item mb-3 p-3 border rounded">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h6 class="mb-0">Analyse Somnolence</h6>
+                                <span class="badge bg-warning">En cours</span>
+                            </div>
+                            <p class="text-muted small mb-2">Détection et analyse des patterns de somnolence par chauffeur</p>
+                            <div class="progress mb-2" style="height: 4px;">
+                                <div class="progress-bar bg-warning" style="width: 75%"></div>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">
+                                    <i class="fas fa-clock me-1"></i>ETA: 5 min
+                                </small>
+                                <button class="btn btn-outline-warning btn-sm" disabled>
+                                    <i class="fas fa-spinner fa-spin"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="report-item mb-3 p-3 border rounded">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h6 class="mb-0">Conformité Réglementaire</h6>
+                                <span class="badge bg-info">Programmé</span>
+                            </div>
+                            <p class="text-muted small mb-2">Vérification conformité temps de conduite et repos</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">
+                                    <i class="fas fa-clock me-1"></i>Demain 08:00
+                                </small>
+                                <button class="btn btn-outline-info btn-sm">
+                                    <i class="fas fa-calendar-alt"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <button class="btn btn-outline-primary btn-sm w-100">
+                            <i class="fas fa-history me-2"></i>Voir tous les rapports
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Export Options -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-file-export me-2"></i>Export de Données</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label">Format d'export</label>
+                            <select class="form-select" id="exportFormat">
+                                <option value="pdf">PDF - Rapport complet</option>
+                                <option value="excel">Excel - Données brutes</option>
+                                <option value="csv">CSV - Données tabulaires</option>
+                                <option value="json">JSON - Données API</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="includeCharts" checked>
+                                <label class="form-check-label" for="includeCharts">
+                                    Inclure les graphiques
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="includeDetails" checked>
+                                <label class="form-check-label" for="includeDetails">
+                                    Détails des incidents
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="includeRecommendations">
+                                <label class="form-check-label" for="includeRecommendations">
+                                    Recommandations
+                                </label>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary w-100" onclick="exportData()">
+                            <i class="fas fa-download me-2"></i>Exporter
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Quick Insights -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Insights Rapides</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="insight-item mb-3">
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="fas fa-arrow-up text-danger me-2"></i>
+                                <strong class="text-danger">Augmentation des incidents</strong>
+                            </div>
+                            <p class="small text-muted mb-1">Les incidents de somnolence ont augmenté de 23% cette semaine.</p>
+                            <small class="text-muted">Recommandation: Réviser les horaires de conduite</small>
+                        </div>
+
+                        <div class="insight-item mb-3">
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="fas fa-clock text-warning me-2"></i>
+                                <strong class="text-warning">Pic d'activité</strong>
+                            </div>
+                            <p class="small text-muted mb-1">La plupart des incidents surviennent entre 14h-16h.</p>
+                            <small class="text-muted">Recommandation: Pauses obligatoires après déjeuner</small>
+                        </div>
+
+                        <div class="insight-item">
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="fas fa-trophy text-success me-2"></i>
+                                <strong class="text-success">Meilleure performance</strong>
+                            </div>
+                            <p class="small text-muted mb-1">Jean Dupont maintient un excellent score de sécurité.</p>
+                            <small class="text-muted">À considérer comme formateur</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Generate Report Modal -->
+    <div class="modal fade" id="generateReportModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-plus me-2"></i>Générer Nouveau Rapport
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="reportForm">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Type de rapport *</label>
+                                    <select class="form-select" required>
+                                        <option value="">Sélectionner un type</option>
+                                        <option value="drowsiness">Analyse Somnolence</option>
+                                        <option value="speed">Violations Vitesse</option>
+                                        <option value="performance">Performance Chauffeurs</option>
+                                        <option value="safety">Rapport Sécurité</option>
+                                        <option value="compliance">Conformité Réglementaire</option>
+                                        <option value="custom">Rapport Personnalisé</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Périodicité</label>
+                                    <select class="form-select">
+                                        <option value="once">Une fois</option>
+                                        <option value="daily">Quotidien</option>
+                                        <option value="weekly">Hebdomadaire</option>
+                                        <option value="monthly">Mensuel</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Date de début *</label>
+                                    <input type="date" class="form-control" value="2025-07-20" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Date de fin *</label>
+                                    <input type="date" class="form-control" value="2025-07-27" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Véhicules à inclure</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="allVehicles" checked>
+                                <label class="form-check-label" for="allVehicles">
+                                    Tous les véhicules
+                                </label>
+                            </div>
+                            <div class="row mt-2">
+                                <div class="col-md-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input vehicle-check" type="checkbox" id="trk001">
+                                        <label class="form-check-label" for="trk001">TRK-001</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input vehicle-check" type="checkbox" id="trk002">
+                                        <label class="form-check-label" for="trk002">TRK-002</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input vehicle-check" type="checkbox" id="trk003">
+                                        <label class="form-check-label" for="trk003">TRK-003</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Options supplémentaires</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="detailedAnalysis" checked>
+                                <label class="form-check-label" for="detailedAnalysis">
+                                    Analyse détaillée
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="recommendations">
+                                <label class="form-check-label" for="recommendations">
+                                    Inclure les recommandations
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="emailNotification">
+                                <label class="form-check-label" for="emailNotification">
+                                    Notification par email
+                                </label>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-primary" onclick="generateReport()">
+                        <i class="fas fa-cogs me-2"></i>Générer Rapport
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="reports.js"></script>
+</body>
+</html>

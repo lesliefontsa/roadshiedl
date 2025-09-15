@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RoadShield Travel - Interface Client</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
+        .main-container { background: white; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        .navbar-custom { background: linear-gradient(135deg, #28a745 0%, #20c997 100%); }
+        .card-voyage { transition: transform 0.3s; cursor: pointer; }
+        .card-voyage:hover { transform: translateY(-5px); }
+        .btn-orange { background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%); border: none; color: white; }
+        .btn-orange:hover { background: linear-gradient(135deg, #e55a2b 0%, #e8821a 100%); color: white; }
+        .price-tag { background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white; border-radius: 15px; }
+        .orange-money-logo { color: #ff6b35; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-shield-alt"></i> RoadShield Travel
+            </a>
+            <div class="navbar-nav ms-auto">
+                <div class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-user"></i> <span id="userName">Client</span>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="#" onclick="showProfile()"><i class="fas fa-user"></i> Mon Profil</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="showMyBookings()"><i class="fas fa-ticket-alt"></i> Mes Réservations</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Déconnexion</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="main-container p-4">
+            <!-- Section de Recherche -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card border-0 bg-light">
+                        <div class="card-body">
+                            <h5 class="card-title"><i class="fas fa-search"></i> Rechercher un Voyage</h5>
+                            <div class="row g-3">
+                                <div class="col-md-3">
+                                    <label class="form-label">Ville de Départ</label>
+                                    <select class="form-select" id="departure_city">
+                                        <option value="">Sélectionner...</option>
+                                        <option value="Yaoundé">Yaoundé</option>
+                                        <option value="Douala">Douala</option>
+                                        <option value="Bafoussam">Bafoussam</option>
+                                        <option value="Bamenda">Bamenda</option>
+                                        <option value="Garoua">Garoua</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Ville d'Arrivée</label>
+                                    <select class="form-select" id="arrival_city">
+                                        <option value="">Sélectionner...</option>
+                                        <option value="Yaoundé">Yaoundé</option>
+                                        <option value="Douala">Douala</option>
+                                        <option value="Bafoussam">Bafoussam</option>
+                                        <option value="Bamenda">Bamenda</option>
+                                        <option value="Garoua">Garoua</option>
+                                        <option value="Ngaoundéré">Ngaoundéré</option>
+                                        <option value="Bertoua">Bertoua</option>
+                                        <option value="Maroua">Maroua</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label">Date de Départ</label>
+                                    <input type="date" class="form-control" id="departure_date">
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label">Type de Voyage</label>
+                                    <select class="form-select" id="trip_type">
+                                        <option value="aller">Aller Simple</option>
+                                        <option value="aller_retour">Aller-Retour</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-2 d-flex align-items-end">
+                                    <button class="btn btn-primary w-100" onclick="searchTrips()">
+                                        <i class="fas fa-search"></i> Rechercher
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section des Voyages Disponibles -->
+            <div class="row">
+                <div class="col-12">
+                    <h4 class="mb-3"><i class="fas fa-bus"></i> Voyages Disponibles</h4>
+                    <div id="trips-container" class="row">
+                        <!-- Les voyages seront chargés ici dynamiquement -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Réservation -->
+    <div class="modal fade" id="bookingModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title"><i class="fas fa-ticket-alt"></i> Réserver ce Voyage</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="booking-details">
+                        <!-- Détails de réservation -->
+                    </div>
+                    
+                    <!-- Informations Passager -->
+                    <div class="card mt-3">
+                        <div class="card-header">
+                            <h6><i class="fas fa-user"></i> Informations Passager</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <label class="form-label">Nom Complet</label>
+                                    <input type="text" class="form-control" id="passenger_name" readonly>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Téléphone</label>
+                                    <input type="text" class="form-control" id="passenger_phone" readonly>
+                                </div>
+                            </div>
+                            <div class="row mt-2">
+                                <div class="col-md-6">
+                                    <label class="form-label">Email</label>
+                                    <input type="email" class="form-control" id="passenger_email" readonly>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Nombre de Places</label>
+                                    <select class="form-select" id="seat_count">
+                                        <option value="1">1 Place</option>
+                                        <option value="2">2 Places</option>
+                                        <option value="3">3 Places</option>
+                                        <option value="4">4 Places</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Récapitulatif et Paiement -->
+                    <div class="card mt-3">
+                        <div class="card-header bg-warning">
+                            <h6><i class="fas fa-credit-card orange-money-logo"></i> Paiement Orange Money</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <div id="price-breakdown">
+                                        <!-- Détail des prix -->
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card bg-light">
+                                        <div class="card-body text-center">
+                                            <h6>Total à Payer</h6>
+                                            <h3 class="text-primary" id="total-amount">0 XAF</h3>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-orange" onclick="processPayment()">
+                        <i class="fab fa-paypal"></i> Payer avec Orange Money
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmation de Paiement -->
+    <div class="modal fade" id="paymentModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title"><i class="fas fa-check-circle"></i> Paiement Réussi</h5>
+                </div>
+                <div class="modal-body text-center">
+                    <div class="mb-3">
+                        <i class="fas fa-check-circle fa-4x text-success"></i>
+                    </div>
+                    <h5>Réservation Confirmée !</h5>
+                    <p>Votre ticket sera généré automatiquement.</p>
+                    <div id="payment-details">
+                        <!-- Détails du paiement -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" onclick="downloadTicket()">
+                        <i class="fas fa-download"></i> Télécharger le Ticket
+                    </button>
+                    <button type="button" class="btn btn-success" onclick="viewTicket()">
+                        <i class="fas fa-eye"></i> Voir le Ticket
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        class TravelBookingSystem {
+            constructor() {
+                this.apiBaseUrl = 'http://localhost:8009';
+                this.selectedTrip = null;
+                this.currentUser = null;
+                this.init();
+            }
+
+            init() {
+                // Vérifier l'authentification
+                this.checkAuth();
+                
+                // Charger les voyages disponibles
+                this.loadAvailableTrips();
+                
+                // Définir la date minimale à aujourd'hui
+                document.getElementById('departure_date').min = new Date().toISOString().split('T')[0];
+            }
+
+            checkAuth() {
+                const token = localStorage.getItem('authToken');
+                const user = JSON.parse(localStorage.getItem('userInfo') || 'null');
+                
+                if (!token || !user) {
+                    window.location.href = '/login/';
+                    return;
+                }
+                
+                if (user.role !== 'client') {
+                    alert('Accès réservé aux clients');
+                    window.location.href = '/login/';
+                    return;
+                }
+                
+                this.currentUser = user;
+                document.getElementById('userName').textContent = `${user.first_name} ${user.last_name}`;
+                
+                // Pré-remplir les informations passager
+                document.getElementById('passenger_name').value = `${user.first_name} ${user.last_name}`;
+                document.getElementById('passenger_phone').value = user.phone || '';
+                document.getElementById('passenger_email').value = user.email || '';
+            }
+
+            async loadAvailableTrips() {
+                try {
+                    const response = await fetch(`${this.apiBaseUrl}/voyages/available/`);
+                    const data = await response.json();
+                    
+                    if (data.status === 'success') {
+                        this.displayTrips(data.voyages);
+                    }
+                } catch (error) {
+                    console.error('Erreur chargement voyages:', error);
+                    this.displaySampleTrips(); // Afficher des données d'exemple
+                }
+            }
+
+            displaySampleTrips() {
+                // Données d'exemple pour démonstration
+                const sampleTrips = [
+                    {
+                        id: 1,
+                        departure_city: 'Yaoundé',
+                        arrival_city: 'Douala',
+                        departure_date: '2024-12-20',
+                        departure_time: '08:00',
+                        arrival_time: '12:00',
+                        bus_type: 'VIP',
+                        available_seats: 25,
+                        price_simple: 3500,
+                        price_return: 6500,
+                        duration: '4h00'
+                    },
+                    {
+                        id: 2,
+                        departure_city: 'Douala',
+                        arrival_city: 'Bafoussam',
+                        departure_date: '2024-12-20',
+                        departure_time: '14:00',
+                        arrival_time: '18:30',
+                        bus_type: 'Standard',
+                        available_seats: 18,
+                        price_simple: 4500,
+                        price_return: 8500,
+                        duration: '4h30'
+                    },
+                    {
+                        id: 3,
+                        departure_city: 'Yaoundé',
+                        arrival_city: 'Bamenda',
+                        departure_date: '2024-12-21',
+                        departure_time: '06:30',
+                        arrival_time: '13:00',
+                        bus_type: 'VIP',
+                        available_seats: 12,
+                        price_simple: 6500,
+                        price_return: 12000,
+                        duration: '6h30'
+                    }
+                ];
+                
+                this.displayTrips(sampleTrips);
+            }
+
+            displayTrips(trips) {
+                const container = document.getElementById('trips-container');
+                
+                if (trips.length === 0) {
+                    container.innerHTML = `
+                        <div class="col-12">
+                            <div class="alert alert-info text-center">
+                                <i class="fas fa-info-circle"></i> Aucun voyage disponible pour les critères sélectionnés.
+                            </div>
+                        </div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = trips.map(trip => `
+                    <div class="col-md-6 col-lg-4 mb-3">
+                        <div class="card card-voyage h-100" onclick="selectTrip(${trip.id})">
+                            <div class="card-header bg-primary text-white">
+                                <h6 class="mb-0">
+                                    <i class="fas fa-route"></i> ${trip.departure_city} → ${trip.arrival_city}
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span><i class="fas fa-calendar"></i> ${this.formatDate(trip.departure_date)}</span>
+                                    <span class="badge bg-secondary">${trip.bus_type}</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span><i class="fas fa-clock"></i> ${trip.departure_time}</span>
+                                    <span><i class="fas fa-hourglass-half"></i> ${trip.duration}</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-3">
+                                    <span><i class="fas fa-users"></i> ${trip.available_seats} places</span>
+                                    <span class="text-muted">Arrivée: ${trip.arrival_time}</span>
+                                </div>
+                                
+                                <div class="price-tag p-2 text-center">
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <small>Aller Simple</small><br>
+                                            <strong>${trip.price_simple.toLocaleString()} XAF</strong>
+                                        </div>
+                                        <div class="col-6">
+                                            <small>Aller-Retour</small><br>
+                                            <strong>${trip.price_return.toLocaleString()} XAF</strong>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-footer text-center">
+                                <button class="btn btn-primary btn-sm">
+                                    <i class="fas fa-ticket-alt"></i> Réserver
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            formatDate(dateString) {
+                const date = new Date(dateString);
+                return date.toLocaleDateString('fr-FR', {
+                    weekday: 'short',
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                });
+            }
+        }
+
+        // Fonctions globales
+        function searchTrips() {
+            const system = window.bookingSystem;
+            const filters = {
+                departure_city: document.getElementById('departure_city').value,
+                arrival_city: document.getElementById('arrival_city').value,
+                departure_date: document.getElementById('departure_date').value,
+                trip_type: document.getElementById('trip_type').value
+            };
+            
+            // Ici on filtrerait les voyages selon les critères
+            system.loadAvailableTrips();
+        }
+
+        function selectTrip(tripId) {
+            // Implémenter la sélection d'un voyage pour réservation
+            console.log('Voyage sélectionné:', tripId);
+            // Ouvrir le modal de réservation
+            const modal = new bootstrap.Modal(document.getElementById('bookingModal'));
+            modal.show();
+        }
+
+        function processPayment() {
+            // Simuler le paiement Orange Money
+            setTimeout(() => {
+                document.getElementById('bookingModal').style.display = 'none';
+                const modal = new bootstrap.Modal(document.getElementById('paymentModal'));
+                modal.show();
+            }, 2000);
+        }
+
+        function downloadTicket() {
+            // Implémenter le téléchargement du ticket
+            alert('Ticket téléchargé !');
+        }
+
+        function viewTicket() {
+            // Rediriger vers la page de visualisation du ticket
+            window.location.href = '/ticket/';
+        }
+
+        function logout() {
+            if (confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
+                localStorage.removeItem('authToken');
+                localStorage.removeItem('userInfo');
+                window.location.href = '/login/';
+            }
+        }
+
+        function showProfile() {
+            alert('Profil - Fonctionnalité à implémenter');
+        }
+
+        function showMyBookings() {
+            alert('Mes Réservations - Fonctionnalité à implémenter');
+        }
+
+        // Initialiser le système
+        document.addEventListener('DOMContentLoaded', () => {
+            window.bookingSystem = new TravelBookingSystem();
+        });
+    </script>
+</body>
+</html>

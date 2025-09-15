@@ -1,0 +1,436 @@
+{% extends 'backoffice/base_backoffice.html' %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="/travel/admin-backoffice/">Backoffice</a></li>
+<li class="breadcrumb-item active">Autobus</li>
+{% endblock %}
+
+{% block content %}
+<style>
+  .bus-card {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+  }
+  .bus-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+  }
+  .status-badge {
+    font-size: 0.75rem;
+    padding: 0.375rem 0.75rem;
+    border-radius: 20px;
+  }
+  .add-bus-card {
+    border: 2px dashed #007bff;
+    border-radius: 15px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    min-height: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+  }
+  .add-bus-card:hover {
+    border-color: #0056b3;
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+  }
+  .bus-number {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #007bff;
+  }
+  .search-filters {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 30px;
+  }
+</style>
+
+<div class="container-fluid">
+  <!-- Page Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2><i class="fas fa-bus text-primary"></i> Gestion des Autobus</h2>
+      <p class="text-muted mb-0">Gérez votre flotte de véhicules</p>
+    </div>
+    <div>
+      <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addBusModal">
+        <i class="fas fa-plus"></i> Ajouter un Bus
+      </button>
+    </div>
+  </div>
+
+  <!-- Filtres et Recherche -->
+  <div class="search-filters">
+    <div class="row">
+      <div class="col-md-4">
+        <div class="input-group">
+          <span class="input-group-text"><i class="fas fa-search"></i></span>
+          <input type="text" class="form-control" placeholder="Rechercher par numéro ou modèle..." id="searchBus">
+        </div>
+      </div>
+      <div class="col-md-3">
+        <select class="form-select" id="filterStatus">
+          <option value="">Tous les statuts</option>
+          <option value="disponible">Disponible</option>
+          <option value="hors_service">Hors Service</option>
+          <option value="en_voyage">En Voyage</option>
+        </select>
+      </div>
+      <div class="col-md-3">
+        <select class="form-select" id="filterDriver">
+          <option value="">Tous les chauffeurs</option>
+          <option value="assigned">Avec chauffeur</option>
+          <option value="unassigned">Sans chauffeur</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <button class="btn btn-outline-secondary w-100" onclick="resetFilters()">
+          <i class="fas fa-redo"></i> Reset
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Grille des Bus -->
+  <div class="row" id="busGrid">
+    <!-- Formulaire d'ajout/édition si en mode édition -->
+    {% if edit_bus %}
+    <div class="col-md-6 col-lg-4 mb-4">
+      <div class="card bus-card border-warning">
+        <div class="card-header bg-warning text-dark">
+          <h5 class="mb-0"><i class="fas fa-edit"></i> Modifier le Bus</h5>
+        </div>
+        <div class="card-body">
+          <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="edit_id" value="{{ edit_bus.id }}">
+            
+            <div class="mb-3">
+              <label class="form-label">Numéro du Bus</label>
+              <input class="form-control" name="bus_number" value="{{ edit_bus.bus_number }}" required>
+            </div>
+            
+            <div class="mb-3">
+              <label class="form-label">Modèle</label>
+              <input class="form-control" name="bus_model" value="{{ edit_bus.bus_model }}" required>
+            </div>
+            
+            <div class="mb-3">
+              <label class="form-label">Nombre de Places</label>
+              <input class="form-control" name="total_seats" type="number" value="{{ edit_bus.total_seats }}" required>
+            </div>
+            
+            <div class="mb-3">
+              <label class="form-label">Statut</label>
+              <select class="form-select" name="status">
+                <option value="disponible" {% if edit_bus.status == 'disponible' %}selected{% endif %}>Disponible</option>
+                <option value="hors_service" {% if edit_bus.status == 'hors_service' %}selected{% endif %}>Hors Service</option>
+                <option value="en_voyage" {% if edit_bus.status == 'en_voyage' %}selected{% endif %}>En Voyage</option>
+              </select>
+            </div>
+            
+            <div class="d-grid gap-2">
+              <button class="btn btn-warning" type="submit">
+                <i class="fas fa-save"></i> Enregistrer
+              </button>
+              <a href="/travel/admin-backoffice/buses/" class="btn btn-outline-secondary">
+                <i class="fas fa-times"></i> Annuler
+              </a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Liste des Bus -->
+    {% for bus in buses %}
+    <div class="col-md-6 col-lg-4 mb-4 bus-item" 
+         data-status="{{ bus.status }}" 
+         data-driver="{% if bus.assigned_driver %}assigned{% else %}unassigned{% endif %}"
+         data-search="{{ bus.bus_number|lower }} {{ bus.bus_model|lower }}">
+      <div class="card bus-card h-100">
+        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+          <div class="bus-number">{{ bus.bus_number }}</div>
+          <span class="badge status-badge {% if bus.status == 'disponible' %}bg-success{% elif bus.status == 'hors_service' %}bg-danger{% else %}bg-warning{% endif %}">
+            {% if bus.status == 'disponible' %}
+              <i class="fas fa-check-circle"></i> Disponible
+            {% elif bus.status == 'hors_service' %}
+              <i class="fas fa-exclamation-triangle"></i> Hors Service
+            {% else %}
+              <i class="fas fa-route"></i> En Voyage
+            {% endif %}
+          </span>
+        </div>
+        
+        <div class="card-body">
+          <h6 class="card-title">
+            <i class="fas fa-bus text-primary"></i> {{ bus.bus_model }}
+          </h6>
+          
+          <div class="row mb-3">
+            <div class="col-6">
+              <small class="text-muted">Places</small>
+              <div class="fw-bold">
+                <i class="fas fa-chair"></i> {{ bus.total_seats }}
+              </div>
+            </div>
+            <div class="col-6">
+              <small class="text-muted">Chauffeur</small>
+              <div class="fw-bold">
+                {% if bus.assigned_driver %}
+                  <i class="fas fa-user-check text-success"></i>
+                  <small>{{ bus.assigned_driver.get_full_name|default:bus.assigned_driver.username }}</small>
+                {% else %}
+                  <i class="fas fa-user-times text-muted"></i>
+                  <small class="text-muted">Non assigné</small>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+          
+          <!-- Informations supplémentaires -->
+          <div class="mb-3">
+            <small class="text-muted">Dernière maintenance</small>
+            <div><small>{{ bus.last_maintenance|default:"Non renseigné" }}</small></div>
+          </div>
+        </div>
+        
+        <div class="card-footer bg-transparent">
+          <div class="btn-group w-100" role="group">
+            <a href="?edit={{ bus.id }}" class="btn btn-outline-primary btn-sm">
+              <i class="fas fa-edit"></i> Éditer
+            </a>
+            <button class="btn btn-outline-info btn-sm" data-bs-toggle="modal" data-bs-target="#viewBusModal{{ bus.id }}">
+              <i class="fas fa-eye"></i> Voir
+            </button>
+            <a href="/travel/admin-backoffice/buses/delete/{{ bus.id }}/" 
+               class="btn btn-outline-danger btn-sm"
+               onclick="return confirm('Êtes-vous sûr de vouloir supprimer le bus {{ bus.bus_number }} ?')">
+              <i class="fas fa-trash"></i> Supprimer
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+      <div class="text-center py-5">
+        <i class="fas fa-bus fa-4x text-muted mb-3"></i>
+        <h4>Aucun autobus enregistré</h4>
+        <p class="text-muted">Commencez par ajouter votre premier véhicule à la flotte.</p>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addBusModal">
+          <i class="fas fa-plus"></i> Ajouter le premier bus
+        </button>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Modal Ajouter Bus -->
+<div class="modal fade" id="addBusModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="fas fa-plus text-primary"></i> Ajouter un Nouveau Bus
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="post">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Numéro du Bus</label>
+            <input class="form-control" name="bus_number" placeholder="Ex: YA-002" required>
+            <div class="form-text">Format recommandé: YA-XXX</div>
+          </div>
+          
+          <div class="mb-3">
+            <label class="form-label">Modèle</label>
+            <select class="form-select" name="bus_model" required>
+              <option value="">Sélectionner un modèle</option>
+              <option value="Mercedes Sprinter">Mercedes Sprinter</option>
+              <option value="Toyota Hiace">Toyota Hiace</option>
+              <option value="Iveco Daily">Iveco Daily</option>
+              <option value="Volkswagen Crafter">Volkswagen Crafter</option>
+              <option value="Ford Transit">Ford Transit</option>
+              <option value="Autre">Autre</option>
+            </select>
+          </div>
+          
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label">Nombre de Places</label>
+                <input class="form-control" name="total_seats" type="number" min="5" max="80" value="25" required>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label">Statut Initial</label>
+                <select class="form-select" name="status">
+                  <option value="disponible" selected>Disponible</option>
+                  <option value="hors_service">Hors Service</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          
+          <div class="mb-3">
+            <label class="form-label">Chauffeur Assigné (Optionnel)</label>
+            <select class="form-select" name="assigned_driver">
+              <option value="">Aucun chauffeur assigné</option>
+              {% for driver in available_drivers %}
+              <option value="{{ driver.id }}">{{ driver.get_full_name }} ({{ driver.license_number }})</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+          <button type="submit" class="btn btn-primary">
+            <i class="fas fa-save"></i> Créer le Bus
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modales de Détail pour chaque Bus -->
+{% for bus in buses %}
+<div class="modal fade" id="viewBusModal{{ bus.id }}" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="fas fa-bus text-primary"></i> Détails du Bus {{ bus.bus_number }}
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row">
+          <div class="col-md-6">
+            <h6><i class="fas fa-info-circle"></i> Informations Générales</h6>
+            <table class="table table-sm">
+              <tr><td><strong>Numéro:</strong></td><td>{{ bus.bus_number }}</td></tr>
+              <tr><td><strong>Modèle:</strong></td><td>{{ bus.bus_model }}</td></tr>
+              <tr><td><strong>Places:</strong></td><td>{{ bus.total_seats }}</td></tr>
+              <tr><td><strong>Statut:</strong></td><td>
+                <span class="badge {% if bus.status == 'disponible' %}bg-success{% elif bus.status == 'hors_service' %}bg-danger{% else %}bg-warning{% endif %}">
+                  {{ bus.get_status_display }}
+                </span>
+              </td></tr>
+            </table>
+          </div>
+          <div class="col-md-6">
+            <h6><i class="fas fa-user-tie"></i> Chauffeur</h6>
+            {% if bus.assigned_driver %}
+            <div class="d-flex align-items-center mb-2">
+              <img src="https://ui-avatars.com/api/?name={{ bus.assigned_driver.first_name }}+{{ bus.assigned_driver.last_name }}&size=50" 
+                   class="rounded-circle me-3" alt="Chauffeur">
+              <div>
+                <strong>{{ bus.assigned_driver.get_full_name }}</strong><br>
+                <small class="text-muted">Permis: {{ bus.assigned_driver.license_number|default:"Non renseigné" }}</small><br>
+                <small class="text-muted">Note: {{ bus.assigned_driver.rating|default:"N/A" }}/5</small>
+              </div>
+            </div>
+            {% else %}
+            <p class="text-muted">Aucun chauffeur assigné</p>
+            {% endif %}
+          </div>
+        </div>
+        
+        <hr>
+        
+        <div class="row">
+          <div class="col-12">
+            <h6><i class="fas fa-history"></i> Historique Récent</h6>
+            <div class="timeline">
+              <!-- Ici on pourrait ajouter l'historique des voyages -->
+              <p class="text-muted">Aucun historique disponible pour le moment.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+        <a href="?edit={{ bus.id }}" class="btn btn-primary">
+          <i class="fas fa-edit"></i> Modifier
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endfor %}
+
+<script>
+// Fonctions de recherche et filtrage
+function searchBuses() {
+  const searchTerm = document.getElementById('searchBus').value.toLowerCase();
+  const statusFilter = document.getElementById('filterStatus').value;
+  const driverFilter = document.getElementById('filterDriver').value;
+  
+  const busItems = document.querySelectorAll('.bus-item');
+  
+  busItems.forEach(item => {
+    const searchText = item.dataset.search;
+    const status = item.dataset.status;
+    const driver = item.dataset.driver;
+    
+    let show = true;
+    
+    // Filtre de recherche
+    if (searchTerm && !searchText.includes(searchTerm)) {
+      show = false;
+    }
+    
+    // Filtre de statut
+    if (statusFilter && status !== statusFilter) {
+      show = false;
+    }
+    
+    // Filtre de chauffeur
+    if (driverFilter && driver !== driverFilter) {
+      show = false;
+    }
+    
+    item.style.display = show ? 'block' : 'none';
+  });
+}
+
+function resetFilters() {
+  document.getElementById('searchBus').value = '';
+  document.getElementById('filterStatus').value = '';
+  document.getElementById('filterDriver').value = '';
+  searchBuses();
+}
+
+// Event listeners
+document.getElementById('searchBus').addEventListener('input', searchBuses);
+document.getElementById('filterStatus').addEventListener('change', searchBuses);
+document.getElementById('filterDriver').addEventListener('change', searchBuses);
+
+// Animation d'entrée pour les cartes
+document.addEventListener('DOMContentLoaded', function() {
+  const cards = document.querySelectorAll('.bus-card');
+  cards.forEach((card, index) => {
+    card.style.opacity = '0';
+    card.style.transform = 'translateY(30px)';
+    
+    setTimeout(() => {
+      card.style.transition = 'all 0.5s ease';
+      card.style.opacity = '1';
+      card.style.transform = 'translateY(0)';
+    }, index * 100);
+  });
+});
+</script>
+
+{% endblock %}

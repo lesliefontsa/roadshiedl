@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test de Connexion Client</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; }
+        .test-section { background: #f8f9fa; padding: 20px; margin: 20px 0; border-radius: 8px; }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+        button { background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        input { padding: 8px; margin: 5px; border: 1px solid #ddd; border-radius: 4px; width: 200px; }
+        .log { background: #f1f1f1; padding: 10px; margin: 10px 0; border-radius: 4px; font-family: monospace; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Test de Connexion Client</h1>
+    
+    <div class="test-section">
+        <h3>1. Test de Connexion au Serveur</h3>
+        <button onclick="testServerConnection()">Tester la Connexion Serveur</button>
+        <div id="serverResult" class="log"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>2. Test de Connexion API</h3>
+        <input type="text" id="testUsername" placeholder="Nom d'utilisateur" value="client1">
+        <input type="password" id="testPassword" placeholder="Mot de passe" value="client123">
+        <button onclick="testLogin()">Tester Connexion</button>
+        <div id="loginResult" class="log"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>3. Informations Réseau</h3>
+        <div id="networkInfo" class="log"></div>
+    </div>
+
+    <script>
+        const log = (elementId, message, type = 'info') => {
+            const element = document.getElementById(elementId);
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'error' ? 'error' : type === 'success' ? 'success' : 'info';
+            element.innerHTML += `<div class="${className}">[${timestamp}] ${message}</div>`;
+        };
+
+        const clear = (elementId) => {
+            document.getElementById(elementId).innerHTML = '';
+        };
+
+        async function testServerConnection() {
+            clear('serverResult');
+            log('serverResult', 'Test de connexion au serveur...', 'info');
+            
+            try {
+                const response = await fetch('http://localhost:8009/', {
+                    method: 'GET',
+                    mode: 'cors'
+                });
+                
+                log('serverResult', `✅ Serveur accessible - Status: ${response.status}`, 'success');
+                log('serverResult', `Headers: ${JSON.stringify(Object.fromEntries(response.headers.entries()))}`, 'info');
+                
+            } catch (error) {
+                log('serverResult', `❌ Erreur de connexion: ${error.message}`, 'error');
+                log('serverResult', `Type d'erreur: ${error.name}`, 'error');
+                
+                if (error.message.includes('CORS')) {
+                    log('serverResult', '🔧 Problème CORS détecté', 'error');
+                } else if (error.message.includes('Network')) {
+                    log('serverResult', '🔧 Problème réseau détecté', 'error');
+                }
+            }
+        }
+
+        async function testLogin() {
+            clear('loginResult');
+            const username = document.getElementById('testUsername').value;
+            const password = document.getElementById('testPassword').value;
+            
+            log('loginResult', 'Test de connexion utilisateur...', 'info');
+            log('loginResult', `Utilisateur: ${username}`, 'info');
+            
+            try {
+                const response = await fetch('http://localhost:8009/api/auth/login/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        username: username,
+                        password: password
+                    })
+                });
+                
+                log('loginResult', `Status: ${response.status} ${response.statusText}`, 'info');
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    log('loginResult', '✅ Connexion réussie!', 'success');
+                    log('loginResult', `Token: ${data.token}`, 'success');
+                    log('loginResult', `Utilisateur: ${JSON.stringify(data.user, null, 2)}`, 'success');
+                    
+                    // Test de redirection
+                    if (data.user.role === 'client') {
+                        log('loginResult', '🔄 Redirection vers dashboard client...', 'info');
+                        setTimeout(() => {
+                            window.location.href = 'http://localhost:8009/client-dashboard/';
+                        }, 2000);
+                    }
+                } else {
+                    log('loginResult', `❌ Erreur de connexion: ${data.message}`, 'error');
+                }
+                
+            } catch (error) {
+                log('loginResult', `❌ Erreur technique: ${error.message}`, 'error');
+            }
+        }
+
+        // Afficher les informations réseau
+        function showNetworkInfo() {
+            const info = document.getElementById('networkInfo');
+            info.innerHTML = `
+                <div>🌐 URL actuelle: ${window.location.href}</div>
+                <div>🔗 Origin: ${window.location.origin}</div>
+                <div>🖥️ User Agent: ${navigator.userAgent}</div>
+                <div>📶 En ligne: ${navigator.onLine ? '✅' : '❌'}</div>
+            `;
+        }
+
+        // Initialisation
+        window.onload = () => {
+            showNetworkInfo();
+        };
+    </script>
+</body>
+</html>

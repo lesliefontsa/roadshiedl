@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RoadShield - Espace Client</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://js.stripe.com/v3/"></script>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .client-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .client-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            margin-bottom: 30px;
+        }
+        
+        .client-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 30px;
+            border-radius: 15px 15px 0 0;
+            text-align: center;
+        }
+        
+        .trip-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            margin-bottom: 20px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid #e8ecef;
+        }
+        
+        .trip-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+        }
+        
+        .trip-header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px;
+            border-radius: 12px 12px 0 0;
+        }
+        
+        .trip-route {
+            font-size: 1.4rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .trip-details {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .price-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 0 0 12px 12px;
+        }
+        
+        .price-option {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 2px solid transparent;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .price-option:hover {
+            background: #e9ecef;
+            border-color: var(--secondary-color);
+        }
+        
+        .price-option.selected {
+            background: #e3f2fd;
+            border-color: var(--secondary-color);
+        }
+        
+        .btn-book {
+            background: linear-gradient(135deg, var(--success-color), #2ecc71);
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            color: white;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-book:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(46, 204, 113, 0.3);
+        }
+        
+        .payment-modal .modal-content {
+            border-radius: 15px;
+            border: none;
+        }
+        
+        .payment-header {
+            background: linear-gradient(135deg, var(--secondary-color), #5dade2);
+            color: white;
+            border-radius: 15px 15px 0 0;
+        }
+        
+        #card-element {
+            padding: 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            background: white;
+        }
+        
+        .alert-custom {
+            border: none;
+            border-radius: 10px;
+            padding: 15px 20px;
+        }
+        
+        .nav-pills .nav-link {
+            border-radius: 25px;
+            margin: 0 5px;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-pills .nav-link.active {
+            background: var(--secondary-color);
+        }
+    </style>
+</head>
+<body>
+    <div class="client-container">
+        <!-- En-tête Client -->
+        <div class="client-card">
+            <div class="client-header">
+                <h1><i class="fas fa-road me-3"></i>RoadShield - Espace Client</h1>
+                <p class="mb-0">Bienvenue {{ user.first_name }} {{ user.last_name }}</p>
+                <small>Réservez vos voyages en toute sécurité</small>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="client-card">
+            <div class="card-body">
+                <ul class="nav nav-pills nav-fill">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#" onclick="showSection('voyages')">
+                            <i class="fas fa-bus me-2"></i>Voyages Disponibles
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="showSection('reservations')">
+                            <i class="fas fa-ticket-alt me-2"></i>Mes Réservations
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="showSection('profil')">
+                            <i class="fas fa-user me-2"></i>Mon Profil
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-danger" href="#" onclick="logout()">
+                            <i class="fas fa-sign-out-alt me-2"></i>Déconnexion
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Section Voyages Disponibles -->
+        <div id="voyages-section" class="section-content">
+            <div class="client-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h3><i class="fas fa-route me-2"></i>Voyages Disponibles</h3>
+                        <div class="input-group" style="width: 300px;">
+                            <input type="text" class="form-control" placeholder="Rechercher une destination..." id="searchTrips">
+                            <button class="btn btn-outline-secondary" onclick="searchTrips()">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="trips-container">
+                        <!-- Les voyages seront chargés ici via JavaScript -->
+                        <div class="text-center">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Chargement...</span>
+                            </div>
+                            <p class="mt-2">Chargement des voyages...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section Mes Réservations -->
+        <div id="reservations-section" class="section-content" style="display: none;">
+            <div class="client-card">
+                <div class="card-body">
+                    <h3><i class="fas fa-history me-2"></i>Mes Réservations</h3>
+                    <div id="reservations-container">
+                        <!-- Les réservations seront chargées ici -->
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Aucune réservation trouvée. Réservez votre premier voyage !
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section Mon Profil -->
+        <div id="profil-section" class="section-content" style="display: none;">
+            <div class="client-card">
+                <div class="card-body">
+                    <h3><i class="fas fa-user-edit me-2"></i>Mon Profil</h3>
+                    <form id="profileForm">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Prénom</label>
+                                <input type="text" class="form-control" name="first_name" value="{{ user.first_name }}">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Nom</label>
+                                <input type="text" class="form-control" name="last_name" value="{{ user.last_name }}">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Email</label>
+                                <input type="email" class="form-control" name="email" value="{{ user.email }}">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Téléphone</label>
+                                <input type="tel" class="form-control" name="phone" value="{{ user.phone }}">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Sauvegarder
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Paiement Stripe -->
+    <div class="modal fade payment-modal" id="paymentModal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header payment-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-credit-card me-2"></i>Finaliser la Réservation et Paiement
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <!-- Récapitulatif de la réservation -->
+                        <div class="col-md-6">
+                            <div class="alert alert-info alert-custom mb-4">
+                                <h6><i class="fas fa-info-circle me-2"></i>Récapitulatif de votre voyage</h6>
+                                <div id="booking-summary">
+                                    <!-- Sera rempli par JavaScript -->
+                                </div>
+                            </div>
+
+                            <!-- Informations du voyageur -->
+                            <div class="card mb-3">
+                                <div class="card-header">
+                                    <h6 class="mb-0"><i class="fas fa-user me-2"></i>Informations du voyageur</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">Nom complet *</label>
+                                            <input type="text" class="form-control" id="passenger-name" required>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">Téléphone *</label>
+                                            <input type="tel" class="form-control" id="passenger-phone" required>
+                                        </div>
+                                        <div class="col-12 mb-3">
+                                            <label class="form-label">Email *</label>
+                                            <input type="email" class="form-control" id="passenger-email" required>
+                                        </div>
+                                        <div class="col-12 mb-3">
+                                            <label class="form-label">Nombre de places</label>
+                                            <select class="form-control" id="seat-count">
+                                                <option value="1">1 place</option>
+                                                <option value="2">2 places</option>
+                                                <option value="3">3 places</option>
+                                                <option value="4">4 places</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Informations de paiement -->
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6 class="mb-0"><i class="fas fa-credit-card me-2"></i>Informations de paiement</h6>
+                                </div>
+                                <div class="card-body">
+                                    <!-- Formulaire de paiement -->
+                                    <form id="payment-form">
+                                        <div class="mb-3">
+                                            <label class="form-label">Nom sur la carte *</label>
+                                            <input type="text" class="form-control" id="cardholder-name" required>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label class="form-label">Informations de carte *</label>
+                                            <div id="card-element">
+                                                <!-- Stripe Elements va insérer ici -->
+                                            </div>
+                                            <div id="card-errors" role="alert" class="text-danger mt-2"></div>
+                                        </div>
+
+                                        <!-- Adresse de facturation -->
+                                        <div class="mb-3">
+                                            <label class="form-label">Adresse de facturation</label>
+                                            <textarea class="form-control" id="billing-address" rows="2" placeholder="Adresse complète"></textarea>
+                                        </div>
+
+                                        <!-- Récapitulatif financier -->
+                                        <div class="border rounded p-3 mb-3 bg-light">
+                                            <div class="d-flex justify-content-between">
+                                                <span>Sous-total:</span>
+                                                <span id="subtotal-amount">0 FCFA</span>
+                                            </div>
+                                            <div class="d-flex justify-content-between">
+                                                <span>TVA (18%):</span>
+                                                <span id="tax-amount">0 FCFA</span>
+                                            </div>
+                                            <hr>
+                                            <div class="d-flex justify-content-between fw-bold">
+                                                <span>Total à payer:</span>
+                                                <span id="total-amount">0 FCFA</span>
+                                            </div>
+                                        </div>
+
+                                        <div class="d-flex flex-column gap-2">
+                                            <div class="text-muted text-center">
+                                                <small><i class="fas fa-lock me-1"></i>Paiement sécurisé par Stripe</small>
+                                            </div>
+                                            <button type="submit" id="submit-payment" class="btn btn-success btn-lg w-100">
+                                                <i class="fas fa-lock me-2"></i>Payer <span id="payment-amount">0 FCFA</span>
+                                            </button>
+                                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                                                Annuler
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Configuration Stripe (clés de test)
+        const stripe = Stripe('pk_test_51QHn3G2LtU3VMmYWnqm0mR1dSrGx0mxF6qGBnU9LGHPdVTkGJ8b6Ll7K9Vq8wINz0K3iw2N5lCjv7xT0HjXoVX1lQ'); // Clé publique de test
+        const elements = stripe.elements();
+        
+        // Variables globales
+        let currentTrip = null;
+        let selectedPrice = null;
+        let cardElement = null;
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            loadTrips();
+            initializeStripe();
+        });
+
+        // Navigation entre sections
+        function showSection(sectionName) {
+            // Masquer toutes les sections
+            document.querySelectorAll('.section-content').forEach(section => {
+                section.style.display = 'none';
+            });
+            
+            // Afficher la section demandée
+            document.getElementById(sectionName + '-section').style.display = 'block';
+            
+            // Mettre à jour la navigation
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            // Charger les données selon la section
+            if (sectionName === 'reservations') {
+                loadReservations();
+            }
+        }
+
+        // Charger les voyages disponibles
+        function loadTrips() {
+            fetch('/api/trips/list/')
+            .then(response => response.json())
+            .then(result => {
+                if (result.status === 'success') {
+                    displayTrips(result.trips);
+                } else {
+                    showError('Erreur lors du chargement des voyages');
+                }
+            })
+            .catch(error => {
+                console.error('Erreur:', error);
+                showError('Erreur de connexion');
+            });
+        }
+
+        // Afficher les voyages
+        function displayTrips(trips) {
+            const container = document.getElementById('trips-container');
+            
+            if (trips.length === 0) {
+                container.innerHTML = `
+                    <div class="alert alert-warning alert-custom">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Aucun voyage disponible pour le moment.
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = trips.map(trip => `
+                <div class="trip-card">
+                    <div class="trip-header">
+                        <div class="trip-route">
+                            <i class="fas fa-map-marker-alt me-2"></i>
+                            ${trip.departure_city} → ${trip.arrival_city}
+                        </div>
+                        <div class="trip-details">
+                            <span><i class="fas fa-calendar me-1"></i>${formatDate(trip.date)}</span>
+                            <span><i class="fas fa-clock me-1"></i>${trip.departure_time}</span>
+                            <span><i class="fas fa-users me-1"></i>${trip.available_seats} places</span>
+                        </div>
+                    </div>
+                    <div class="price-section">
+                        <h6 class="mb-3">Choisissez votre billet :</h6>
+                        <div class="price-option" onclick="selectPrice('${trip.id}', 'simple', ${trip.price_simple})">
+                            <div>
+                                <strong>Aller Simple</strong>
+                                <small class="text-muted d-block">Voyage unique</small>
+                            </div>
+                            <div class="text-end">
+                                <strong class="text-success">${trip.price_simple} XAF</strong>
+                            </div>
+                        </div>
+                        <div class="price-option" onclick="selectPrice('${trip.id}', 'return', ${trip.price_return})">
+                            <div>
+                                <strong>Aller-Retour</strong>
+                                <small class="text-muted d-block">Voyage avec retour</small>
+                            </div>
+                            <div class="text-end">
+                                <strong class="text-success">${trip.price_return} XAF</strong>
+                                <small class="text-muted d-block">Économie de ${(trip.price_simple * 2 - trip.price_return)} XAF</small>
+                            </div>
+                        </div>
+                        <div class="text-center mt-3">
+                            <button class="btn btn-book" onclick="bookTrip('${trip.id}')" disabled id="book-btn-${trip.id}">
+                                <i class="fas fa-ticket-alt me-2"></i>Réserver ce voyage
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Sélectionner un prix
+        function selectPrice(tripId, type, price) {
+            // Retirer la sélection précédente pour ce voyage
+            document.querySelectorAll(`[onclick*="${tripId}"]`).forEach(option => {
+                option.classList.remove('selected');
+            });
+            
+            // Ajouter la sélection actuelle
+            event.currentTarget.classList.add('selected');
+            
+            // Activer le bouton de réservation
+            const bookBtn = document.getElementById(`book-btn-${tripId}`);
+            bookBtn.disabled = false;
+            bookBtn.setAttribute('data-price', price);
+            bookBtn.setAttribute('data-type', type);
+        }
+
+        // Réserver un voyage
+        function bookTrip(tripId) {
+            const bookBtn = document.getElementById(`book-btn-${tripId}`);
+            const price = bookBtn.getAttribute('data-price');
+            const type = bookBtn.getAttribute('data-type');
+            
+            if (!price) {
+                alert('Veuillez sélectionner un type de billet');
+                return;
+            }
+
+            // Stocker les informations de réservation
+            currentTrip = {
+                id: tripId,
+                price: price,
+                type: type
+            };
+
+            // Afficher le récapitulatif dans le modal
+            updateBookingSummary();
+            
+            // Ouvrir le modal de paiement
+            const modal = new bootstrap.Modal(document.getElementById('paymentModal'));
+            modal.show();
+        }
+
+        // Mettre à jour le récapitulatif de réservation
+        function updateBookingSummary() {
+            if (!currentTrip) return;
+            
+            // Trouver les détails du voyage
+            fetch(`/api/trips/list/`)
+            .then(response => response.json())
+            .then(result => {
+                const trip = result.trips.find(t => t.id == currentTrip.id);
+                if (trip) {
+                    const seatCount = parseInt(document.getElementById('seat-count').value) || 1;
+                    const subtotal = currentTrip.price * seatCount;
+                    const taxRate = 18; // 18% TVA
+                    const taxAmount = (subtotal * taxRate) / 100;
+                    const total = subtotal + taxAmount;
+                    
+                    document.getElementById('booking-summary').innerHTML = `
+                        <div class="row">
+                            <div class="col-md-8">
+                                <strong>${trip.departure_city} → ${trip.arrival_city}</strong><br>
+                                <small class="text-muted">
+                                    ${formatDate(trip.date)} à ${trip.departure_time}<br>
+                                    ${currentTrip.type === 'simple' ? 'Aller Simple' : 'Aller-Retour'} | 
+                                    ${seatCount} place${seatCount > 1 ? 's' : ''}
+                                </small>
+                            </div>
+                            <div class="col-md-4 text-end">
+                                <strong class="text-success">${currentTrip.price} XAF/place</strong><br>
+                                <small class="text-muted">× ${seatCount} = ${subtotal} XAF</small>
+                            </div>
+                        </div>
+                    `;
+                    
+                    // Mettre à jour les montants
+                    document.getElementById('subtotal-amount').textContent = `${subtotal} FCFA`;
+                    document.getElementById('tax-amount').textContent = `${taxAmount.toFixed(0)} FCFA`;
+                    document.getElementById('total-amount').textContent = `${total.toFixed(0)} FCFA`;
+                    document.getElementById('payment-amount').textContent = `${total.toFixed(0)} FCFA`;
+                }
+            });
+        }
+
+        // Gérer le changement du nombre de places
+        document.addEventListener('change', function(e) {
+            if (e.target && e.target.id === 'seat-count') {
+                updateBookingSummary();
+            }
+        });
+
+        // Initialiser Stripe
+        function initializeStripe() {
+            const style = {
+                base: {
+                    fontSize: '16px',
+                    color: '#424770',
+                    '::placeholder': {
+                        color: '#aab7c4',
+                    },
+                },
+            };
+
+            cardElement = elements.create('card', {style: style});
+            cardElement.mount('#card-element');
+
+            cardElement.on('change', function(event) {
+                const displayError = document.getElementById('card-errors');
+                if (event.error) {
+                    displayError.textContent = event.error.message;
+                } else {
+                    displayError.textContent = '';
+                }
+            });
+
+            // Gérer la soumission du formulaire de paiement
+            document.getElementById('payment-form').addEventListener('submit', handlePayment);
+        }
+
+        // Traiter le paiement
+        async function handlePayment(event) {
+            event.preventDefault();
+            
+            const submitButton = document.getElementById('submit-payment');
+            const originalText = submitButton.innerHTML;
+            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Traitement...';
+            submitButton.disabled = true;
+
+            // Collecter les données du formulaire
+            const formData = {
+                trip_id: currentTrip.id,
+                trip_type: currentTrip.type,
+                passenger_name: document.getElementById('passenger-name').value,
+                passenger_phone: document.getElementById('passenger-phone').value,
+                passenger_email: document.getElementById('passenger-email').value,
+                cardholder_name: document.getElementById('cardholder-name').value,
+                billing_address: document.getElementById('billing-address').value,
+                seat_count: parseInt(document.getElementById('seat-count').value),
+                unit_price: currentTrip.price
+            };
+
+            // Validation des champs requis
+            if (!formData.passenger_name || !formData.passenger_phone || !formData.passenger_email || !formData.cardholder_name) {
+                showPaymentError('Veuillez remplir tous les champs obligatoires.');
+                submitButton.innerHTML = originalText;
+                submitButton.disabled = false;
+                return;
+            }
+
+            try {
+                // Créer un Payment Intent via notre backend
+                const response = await fetch('/api/payment/create-intent/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCsrfToken()
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const result = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(result.error || 'Erreur lors de la création du paiement');
+                }
+
+                // Confirmer le paiement avec Stripe
+                const {error, paymentIntent} = await stripe.confirmCardPayment(result.client_secret, {
+                    payment_method: {
+                        card: cardElement,
+                        billing_details: {
+                            name: formData.cardholder_name,
+                            email: formData.passenger_email,
+                            address: {
+                                line1: formData.billing_address
+                            }
+                        }
+                    }
+                });
+
+                if (error) {
+                    showPaymentError(error.message);
+                    submitButton.innerHTML = originalText;
+                    submitButton.disabled = false;
+                } else {
+                    // Paiement réussi, confirmer la réservation
+                    await confirmBooking(paymentIntent.id, formData);
+                }
+            } catch (error) {
+                showPaymentError(error.message);
+                submitButton.innerHTML = originalText;
+                submitButton.disabled = false;
+            }
+        }
+
+        // Confirmer la réservation après paiement réussi
+        async function confirmBooking(paymentIntentId, formData) {
+            try {
+                const response = await fetch('/api/booking/confirm/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCsrfToken()
+                    },
+                    body: JSON.stringify({
+                        ...formData,
+                        payment_intent_id: paymentIntentId
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showPaymentSuccess(result.booking_id, result.invoice_url);
+                } else {
+                    throw new Error(result.error || 'Erreur lors de la confirmation de réservation');
+                }
+            } catch (error) {
+                showPaymentError('Paiement effectué mais erreur lors de la confirmation: ' + error.message);
+            }
+                }
+            });
+
+            // Gérer la soumission du formulaire de paiement
+            document.getElementById('payment-form').addEventListener('submit', handlePayment);
+        }
+
+        // Gérer le paiement
+        async function handlePayment(event) {
+            event.preventDefault();
+            
+            const submitButton = document.getElementById('submit-payment');
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Traitement...';
+
+            // Créer le PaymentMethod
+            const {paymentMethod, error} = await stripe.createPaymentMethod({
+                type: 'card',
+                card: cardElement,
+                billing_details: {
+                    name: document.getElementById('cardholder-name').value,
+                    email: document.getElementById('cardholder-email').value,
+                },
+            });
+
+            if (error) {
+                showPaymentError(error.message);
+                submitButton.disabled = false;
+                submitButton.innerHTML = '<i class="fas fa-lock me-2"></i>Payer ' + currentTrip.price + ' XAF';
+            } else {
+                // Envoyer au backend pour traitement
+                processPayment(paymentMethod.id);
+            }
+        }
+
+        // Traiter le paiement côté serveur
+        function processPayment(paymentMethodId) {
+            fetch('/api/payment/process/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    payment_method_id: paymentMethodId,
+                    trip_id: currentTrip.id,
+                    trip_type: currentTrip.type,
+                    amount: currentTrip.price
+                })
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    showPaymentSuccess();
+                } else {
+                    showPaymentError(result.error);
+                }
+            })
+            .catch(error => {
+                showPaymentError('Erreur de connexion');
+            })
+            .finally(() => {
+                const submitButton = document.getElementById('submit-payment');
+                submitButton.disabled = false;
+                submitButton.innerHTML = '<i class="fas fa-lock me-2"></i>Payer ' + currentTrip.price + ' XAF';
+            });
+        }
+
+        // Afficher succès du paiement avec téléchargement de facture
+        function showPaymentSuccess(bookingId, invoiceUrl) {
+            const modal = bootstrap.Modal.getInstance(document.getElementById('paymentModal'));
+            modal.hide();
+            
+            // Créer un modal de succès avec option de téléchargement
+            const successModal = document.createElement('div');
+            successModal.className = 'modal fade';
+            successModal.innerHTML = `
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header bg-success text-white">
+                            <h5 class="modal-title">
+                                <i class="fas fa-check-circle me-2"></i>Paiement Réussi !
+                            </h5>
+                        </div>
+                        <div class="modal-body text-center">
+                            <div class="alert alert-success">
+                                <h6>✅ Votre réservation a été confirmée !</h6>
+                                <p class="mb-0">Référence: <strong>${bookingId}</strong></p>
+                            </div>
+                            <p>Votre facture est prête au téléchargement.</p>
+                            <div class="d-grid gap-2">
+                                <a href="${invoiceUrl}" class="btn btn-primary" target="_blank">
+                                    <i class="fas fa-download me-2"></i>Télécharger la facture PDF
+                                </a>
+                                <button type="button" class="btn btn-secondary" onclick="location.reload()">
+                                    Retour aux voyages
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(successModal);
+            const bsModal = new bootstrap.Modal(successModal);
+            bsModal.show();
+            
+            // Nettoyer après fermeture
+            successModal.addEventListener('hidden.bs.modal', () => {
+                document.body.removeChild(successModal);
+                loadTrips(); // Recharger les voyages
+            });
+        }
+
+        // Afficher erreur de paiement
+        function showPaymentError(message) {
+            document.getElementById('card-errors').textContent = message;
+        }
+
+        // Obtenir le token CSRF
+        function getCsrfToken() {
+            const cookies = document.cookie.split(';');
+            for (let cookie of cookies) {
+                const [name, value] = cookie.trim().split('=');
+                if (name === 'csrftoken') {
+                    return value;
+                }
+            }
+            return '';
+        }
+
+        // Fonctions utilitaires
+        function formatDate(dateString) {
+            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+            return new Date(dateString).toLocaleDateString('fr-FR', options);
+        }
+
+        function showError(message) {
+            document.getElementById('trips-container').innerHTML = `
+                <div class="alert alert-danger alert-custom">
+                    <i class="fas fa-exclamation-circle me-2"></i>${message}
+                </div>
+            `;
+        }
+
+        function searchTrips() {
+            const query = document.getElementById('searchTrips').value.toLowerCase();
+            const tripCards = document.querySelectorAll('.trip-card');
+            
+            tripCards.forEach(card => {
+                const text = card.textContent.toLowerCase();
+                card.style.display = text.includes(query) ? 'block' : 'none';
+            });
+        }
+
+        function loadReservations() {
+            // À implémenter : charger les réservations de l'utilisateur
+            console.log('Chargement des réservations...');
+        }
+
+        function logout() {
+            if (confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
+                window.location.href = '/auth/logout/';
+            }
+        }
+    </script>
+</body>
+</html>

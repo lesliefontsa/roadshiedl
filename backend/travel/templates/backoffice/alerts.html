@@ -1,0 +1,116 @@
+{% extends 'backoffice/base_backoffice.html' %}
+{% block content %}
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-12">
+      <h4>Alertes de sécurité</h4>
+      
+      <div class="row mb-3">
+        <div class="col-md-3">
+          <div class="card text-white bg-danger">
+            <div class="card-body">
+              <h5 class="card-title">Critiques</h5>
+              <h3>{{ alerts|length }}</h3>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card text-white bg-warning">
+            <div class="card-body">
+              <h5 class="card-title">Moyennes</h5>
+              <h3>{{ alerts|length }}</h3>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card text-white bg-info">
+            <div class="card-body">
+              <h5 class="card-title">Faibles</h5>
+              <h3>{{ alerts|length }}</h3>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card text-white bg-success">
+            <div class="card-body">
+              <h5 class="card-title">Résolues</h5>
+              <h3>0</h3>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>Type</th>
+            <th>Véhicule</th>
+            <th>Conducteur</th>
+            <th>Sévérité</th>
+            <th>Message</th>
+            <th>Vitesse</th>
+            <th>Date/Heure</th>
+            <th>Statut</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for alert in alerts %}
+            <tr>
+              <td>
+                <span class="badge badge-secondary">{{ alert.get_alert_type_display }}</span>
+              </td>
+              <td>{{ alert.vehicle_name }}</td>
+              <td>{{ alert.driver_name }}</td>
+              <td>
+                {% if alert.severity == 'critical' %}
+                  <span class="badge badge-danger">{{ alert.get_severity_display }}</span>
+                {% elif alert.severity == 'high' %}
+                  <span class="badge badge-warning">{{ alert.get_severity_display }}</span>
+                {% elif alert.severity == 'medium' %}
+                  <span class="badge badge-info">{{ alert.get_severity_display }}</span>
+                {% else %}
+                  <span class="badge badge-light">{{ alert.get_severity_display }}</span>
+                {% endif %}
+              </td>
+              <td>{{ alert.message|truncatechars:50 }}</td>
+              <td>
+                {% if alert.speed_at_time %}
+                  {{ alert.speed_at_time|floatformat:1 }} km/h
+                {% else %}
+                  -
+                {% endif %}
+              </td>
+              <td>{{ alert.created_at|date:"d/m/Y H:i" }}</td>
+              <td>
+                {% if alert.status == 'resolved' %}
+                  <span class="badge badge-success">{{ alert.get_status_display }}</span>
+                {% elif alert.status == 'in_progress' %}
+                  <span class="badge badge-warning">{{ alert.get_status_display }}</span>
+                {% elif alert.status == 'acknowledged' %}
+                  <span class="badge badge-info">{{ alert.get_status_display }}</span>
+                {% else %}
+                  <span class="badge badge-danger">{{ alert.get_status_display }}</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if alert.status != 'resolved' %}
+                  <form method="post" style="display:inline">
+                    {% csrf_token %}
+                    <input type="hidden" name="handle_id" value="{{ alert.id }}">
+                    <button class="btn btn-sm btn-success">Résoudre</button>
+                  </form>
+                {% endif %}
+              </td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="9" class="text-center">Aucune alerte pour le moment</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

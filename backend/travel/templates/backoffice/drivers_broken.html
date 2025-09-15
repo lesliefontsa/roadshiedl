@@ -1,0 +1,406 @@
+{% extends 'backoffice/base_backoffice.html' %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="/travel/admin-backoffice/">Backoffice</a></li>
+<li class="breadcrumb-item active">Chauffeurs</li>
+{% endblock %}
+
+{% block         <div class="card-footer bg-transparent">
+          <div class="btn-group w-100" role="group">
+            <a href="?edit={{ driver.id }}" class="btn btn-outline-primary btn-sm">
+              <i class="fas fa-edit"></i> Éditer
+            </a>
+            <button class="btn btn-outline-info btn-sm" data-bs-toggle="modal" data-bs-target="#viewDriverModal{{ driver.id }}">
+              <i class="fas fa-eye"></i> Voir
+            </button>
+          </div>
+        </div>
+<style>
+  .driver-card {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    overflow: hidden;
+  }
+  .driver-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+  }
+  .driver-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 4px solid #fff;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  }
+  .rating-stars {
+    color: #ffc107;
+  }
+  .status-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+    border: 2px solid #fff;
+  }
+  .status-active { background: #28a745; }
+  .status-inactive { background: #6c757d; }
+  .driver-stats {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 10px;
+    padding: 15px;
+  }
+</style>
+
+<div class="container-fluid">
+  <!-- Page Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2><i class="fas fa-user-tie text-primary"></i> Gestion des Chauffeurs</h2>
+      <p class="text-muted mb-0">Gérez votre équipe de conducteurs professionnels</p>
+    </div>
+    <div>
+      <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addDriverModal">
+        <i class="fas fa-plus"></i> Ajouter un Chauffeur
+      </button>
+    </div>
+  </div>
+
+  <!-- Statistiques des Chauffeurs -->
+  <div class="row mb-4">
+    <div class="col-md-3">
+      <div class="card bg-success text-white">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h4>{{ active_drivers|default:0 }}</h4>
+              <p class="mb-0">Chauffeurs Actifs</p>
+            </div>
+            <i class="fas fa-user-check fa-2x opacity-75"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card bg-info text-white">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h4>{{ avg_rating|default:0|floatformat:1 }}/5</h4>
+              <p class="mb-0">Note Moyenne</p>
+            </div>
+            <i class="fas fa-star fa-2x opacity-75"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card bg-warning text-dark">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h4>{{ drivers_with_bus|default:0 }}</h4>
+              <p class="mb-0">Avec Bus Assigné</p>
+            </div>
+            <i class="fas fa-bus fa-2x opacity-75"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card bg-primary text-white">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h4>{{ total_drivers|default:0 }}</h4>
+              <p class="mb-0">Total Chauffeurs</p>
+            </div>
+            <i class="fas fa-users fa-2x opacity-75"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Grille des Chauffeurs -->
+  <div class="row" id="driversGrid">
+    <!-- Formulaire d'édition si en mode édition -->
+    {% if edit_driver %}
+    <div class="col-md-6 col-lg-4 mb-4">
+      <div class="card driver-card border-warning">
+        <div class="card-header bg-warning text-dark">
+          <h5 class="mb-0"><i class="fas fa-edit"></i> Modifier le Chauffeur</h5>
+        </div>
+        <div class="card-body">
+          <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="edit_id" value="{{ edit_driver.id }}">
+            
+            <div class="mb-3">
+              <label class="form-label">Nom d'utilisateur</label>
+              <input class="form-control" name="username" value="{{ edit_driver.username }}" required>
+            </div>
+            
+            <div class="row">
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label class="form-label">Prénom</label>
+                  <input class="form-control" name="first_name" value="{{ edit_driver.first_name }}">
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label class="form-label">Nom</label>
+                  <input class="form-control" name="last_name" value="{{ edit_driver.last_name }}">
+                </div>
+              </div>
+            </div>
+            
+            <div class="mb-3">
+              <label class="form-label">Email</label>
+              <input class="form-control" name="email" type="email" value="{{ edit_driver.email }}">
+            </div>
+            
+            <div class="mb-3">
+              <label class="form-label">Téléphone</label>
+              <input class="form-control" name="phone" value="{{ edit_driver.phone }}">
+            </div>
+            
+            <div class="mb-3">
+              <label class="form-label">Numéro de Permis</label>
+              <input class="form-control" name="license_number" value="{{ edit_driver.license_number }}">
+            </div>
+            
+            <div class="mb-3">
+              <label class="form-label">Note (0-5)</label>
+              <input class="form-control" name="rating" type="number" step="0.1" min="0" max="5" value="{{ edit_driver.rating|default:0 }}">
+              <div class="form-text">Note actuelle du chauffeur</div>
+            </div>
+            
+            <div class="d-grid gap-2">
+              <button class="btn btn-warning" type="submit">
+                <i class="fas fa-save"></i> Enregistrer
+              </button>
+              <a href="/travel/admin-backoffice/drivers/" class="btn btn-outline-secondary">
+                <i class="fas fa-times"></i> Annuler
+              </a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    {% for driver in drivers %}
+    <div class="col-md-6 col-lg-4 mb-4">
+      <div class="card driver-card h-100">
+        <div class="card-body text-center">
+          <!-- Avatar et Status -->
+          <div class="position-relative d-inline-block mb-3">
+            <img src="https://ui-avatars.com/api/?name={{ driver.first_name|default:'D' }}+{{ driver.last_name|default:'U' }}&background=667eea&color=fff&size=80" 
+                 class="driver-avatar" alt="Avatar">
+            <span class="status-indicator status-{% if driver.is_active %}active{% else %}inactive{% endif %} position-absolute bottom-0 end-0"></span>
+          </div>
+          
+          <!-- Nom et Prénom -->
+          <h5 class="card-title mb-1">{{ driver.get_full_name|default:driver.username }}</h5>
+          <p class="text-muted mb-2">
+            <i class="fas fa-at"></i> {{ driver.username }}
+          </p>
+          
+          <!-- Rating -->
+          <div class="rating-stars mb-3">
+            {% for i in "12345" %}
+              {% if forloop.counter <= driver.rating|default:0 %}
+                <i class="fas fa-star"></i>
+              {% else %}
+                <i class="far fa-star"></i>
+              {% endif %}
+            {% endfor %}
+            <span class="text-muted ms-1">({{ driver.rating|default:0 }}/5)</span>
+          </div>
+          
+          <!-- Informations de Contact -->
+          <div class="driver-stats mb-3">
+            <div class="row text-start">
+              <div class="col-12 mb-2">
+                <small class="text-muted">Email:</small><br>
+                <small>{{ driver.email|default:"Non renseigné" }}</small>
+              </div>
+              <div class="col-12 mb-2">
+                <small class="text-muted">Téléphone:</small><br>
+                <small>{{ driver.phone|default:"Non renseigné" }}</small>
+              </div>
+              <div class="col-12">
+                <small class="text-muted">Bus assigné:</small><br>
+                {% if driver.bus_set.exists %}
+                  {% for bus in driver.bus_set.all %}
+                    <span class="badge bg-primary me-1">{{ bus.bus_number }}</span>
+                  {% endfor %}
+                {% else %}
+                  <small class="text-muted">Aucun bus assigné</small>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card-footer bg-transparent">
+          <div class="btn-group w-100" role="group">
+            <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editDriverModal{{ driver.id }}">
+              <i class="fas fa-edit"></i> Éditer
+            </button>
+            <button class="btn btn-outline-info btn-sm" data-bs-toggle="modal" data-bs-target="#viewDriverModal{{ driver.id }}">
+              <i class="fas fa-eye"></i> Voir
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+      <div class="text-center py-5">
+        <i class="fas fa-user-tie fa-4x text-muted mb-3"></i>
+        <h4>Aucun chauffeur enregistré</h4>
+        <p class="text-muted">Commencez par ajouter votre premier chauffeur à l'équipe.</p>
+        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addDriverModal">
+          <i class="fas fa-plus"></i> Ajouter le premier chauffeur
+        </button>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Modal Ajouter Chauffeur -->
+<div class="modal fade" id="addDriverModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="fas fa-plus text-success"></i> Ajouter un Nouveau Chauffeur
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="post">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label">Nom d'utilisateur *</label>
+                <input class="form-control" name="username" required>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label">Prénom</label>
+                <input class="form-control" name="first_name">
+              </div>
+            </div>
+          </div>
+          
+          <div class="mb-3">
+            <label class="form-label">Nom</label>
+            <input class="form-control" name="last_name">
+          </div>
+          
+          <div class="mb-3">
+            <label class="form-label">Email</label>
+            <input class="form-control" name="email" type="email">
+          </div>
+          
+          <div class="mb-3">
+            <label class="form-label">Téléphone</label>
+            <input class="form-control" name="phone" placeholder="+237 6XX XXX XXX">
+          </div>
+          
+          <div class="mb-3">
+            <label class="form-label">Numéro de Permis</label>
+            <input class="form-control" name="license_number">
+            <div class="form-text">Numéro unique du permis de conduire</div>
+          </div>
+          
+          <div class="mb-3">
+            <label class="form-label">Note initiale (0-5)</label>
+            <input class="form-control" name="rating" type="number" step="0.1" min="0" max="5" value="0">
+            <div class="form-text">Note de départ du chauffeur</div>
+          </div>
+          
+          <div class="mb-3">
+            <label class="form-label">Mot de passe *</label>
+            <input class="form-control" name="password" type="password" required>
+            <div class="form-text">Le chauffeur pourra changer ce mot de passe</div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+          <button type="submit" class="btn btn-success">
+            <i class="fas fa-save"></i> Créer le Chauffeur
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modales de Détail pour chaque Chauffeur -->
+{% for driver in drivers %}
+<div class="modal fade" id="viewDriverModal{{ driver.id }}" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="fas fa-user-tie text-primary"></i> Profil de {{ driver.get_full_name|default:driver.username }}
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row">
+          <div class="col-md-4 text-center">
+            <img src="https://ui-avatars.com/api/?name={{ driver.first_name|default:'D' }}+{{ driver.last_name|default:'U' }}&background=667eea&color=fff&size=120" 
+                 class="rounded-circle mb-3" alt="Avatar">
+            <h5>{{ driver.get_full_name|default:driver.username }}</h5>
+            <div class="rating-stars mb-2">
+              {% for i in "12345" %}
+                {% if forloop.counter <= driver.rating|default:0 %}
+                  <i class="fas fa-star"></i>
+                {% else %}
+                  <i class="far fa-star"></i>
+                {% endif %}
+              {% endfor %}
+            </div>
+            <span class="badge bg-{% if driver.is_active %}success{% else %}secondary{% endif %}">
+              {% if driver.is_active %}Actif{% else %}Inactif{% endif %}
+            </span>
+          </div>
+          <div class="col-md-8">
+            <h6><i class="fas fa-info-circle"></i> Informations Personnelles</h6>
+            <table class="table table-sm">
+              <tr><td><strong>Username:</strong></td><td>{{ driver.username }}</td></tr>
+              <tr><td><strong>Email:</strong></td><td>{{ driver.email|default:"Non renseigné" }}</td></tr>
+              <tr><td><strong>Inscription:</strong></td><td>{{ driver.date_joined|date:"d/m/Y" }}</td></tr>
+              <tr><td><strong>Note:</strong></td><td>{{ driver.rating|default:0 }}/5</td></tr>
+            </table>
+            
+            <h6><i class="fas fa-bus"></i> Bus Assigné</h6>
+            {% if driver.bus_set.exists %}
+              {% for bus in driver.bus_set.all %}
+                <span class="badge bg-primary me-2 mb-2">{{ bus.bus_number }} - {{ bus.bus_model }}</span>
+              {% endfor %}
+            {% else %}
+              <p class="text-muted">Aucun bus assigné</p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endfor %}
+
+{% endblock %}

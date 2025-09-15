@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test de Connexion Client - Django</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
+        .test-card { background: white; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+        .info { color: #007bff; }
+        .log { background: #f8f9fa; padding: 15px; margin: 15px 0; border-radius: 8px; font-family: monospace; font-size: 0.9em; max-height: 300px; overflow-y: auto; }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-10">
+                <div class="test-card p-4">
+                    <h1 class="text-center mb-4">
+                        <i class="fas fa-bug"></i> Diagnostic de Connexion Client
+                    </h1>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card mb-3">
+                                <div class="card-header">
+                                    <h5><i class="fas fa-server"></i> Test Serveur</h5>
+                                </div>
+                                <div class="card-body">
+                                    <button class="btn btn-primary" onclick="testServer()">
+                                        <i class="fas fa-play"></i> Tester Serveur
+                                    </button>
+                                    <div id="serverResult" class="log"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="card mb-3">
+                                <div class="card-header">
+                                    <h5><i class="fas fa-user-lock"></i> Test Connexion</h5>
+                                </div>
+                                <div class="card-body">
+                                    <input type="text" class="form-control mb-2" id="username" placeholder="Username" value="client1">
+                                    <input type="password" class="form-control mb-2" id="password" placeholder="Password" value="client123">
+                                    <button class="btn btn-success" onclick="testLogin()">
+                                        <i class="fas fa-sign-in-alt"></i> Tester Connexion
+                                    </button>
+                                    <div id="loginResult" class="log"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h5><i class="fas fa-info-circle"></i> Informations Système</h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="systemInfo" class="log"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const log = (elementId, message, type = 'info') => {
+            const element = document.getElementById(elementId);
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type;
+            element.innerHTML += `<div class="${className}">[${timestamp}] ${message}</div>`;
+        };
+
+        const clear = (elementId) => {
+            document.getElementById(elementId).innerHTML = '';
+        };
+
+        async function testServer() {
+            clear('serverResult');
+            log('serverResult', 'Vérification du serveur Django...', 'info');
+            
+            try {
+                // Test de la page racine
+                const response = await fetch('/');
+                log('serverResult', `✅ Serveur Django accessible - Status: ${response.status}`, 'success');
+                
+                // Test de l'API
+                const apiResponse = await fetch('/api/trips/');
+                log('serverResult', `✅ API accessible - Status: ${apiResponse.status}`, 'success');
+                
+            } catch (error) {
+                log('serverResult', `❌ Erreur: ${error.message}`, 'error');
+            }
+        }
+
+        async function testLogin() {
+            clear('loginResult');
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            log('loginResult', `Tentative de connexion pour: ${username}`, 'info');
+            
+            try {
+                const response = await fetch('/api/auth/login/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({
+                        username: username,
+                        password: password
+                    })
+                });
+                
+                log('loginResult', `Status HTTP: ${response.status} ${response.statusText}`, 'info');
+                
+                const data = await response.json();
+                
+                if (response.ok && data.status === 'success') {
+                    log('loginResult', '✅ Connexion réussie!', 'success');
+                    log('loginResult', `Token: ${data.token}`, 'success');
+                    log('loginResult', `Utilisateur: ${data.user.username} (${data.user.role})`, 'success');
+                    
+                    // Sauvegarder dans localStorage
+                    localStorage.setItem('authToken', data.token);
+                    localStorage.setItem('userInfo', JSON.stringify(data.user));
+                    
+                    // Redirection automatique
+                    if (data.user.role === 'client') {
+                        log('loginResult', '🔄 Redirection vers dashboard client...', 'info');
+                        setTimeout(() => {
+                            window.location.href = '/client-dashboard/';
+                        }, 2000);
+                    } else {
+                        log('loginResult', '🔄 Redirection vers dashboard admin...', 'info');
+                        setTimeout(() => {
+                            window.location.href = '/admin-dashboard/';
+                        }, 2000);
+                    }
+                } else {
+                    log('loginResult', `❌ Erreur: ${data.message || 'Connexion échouée'}`, 'error');
+                }
+                
+            } catch (error) {
+                log('loginResult', `❌ Erreur technique: ${error.message}`, 'error');
+                if (error.message.includes('fetch')) {
+                    log('loginResult', '🔧 Vérifiez que le serveur Django est en cours d\'exécution', 'error');
+                }
+            }
+        }
+
+        function showSystemInfo() {
+            const info = document.getElementById('systemInfo');
+            info.innerHTML = `
+                <div class="info">🌐 URL: ${window.location.href}</div>
+                <div class="info">🔗 Origin: ${window.location.origin}</div>
+                <div class="info">📶 Connexion: ${navigator.onLine ? '✅ En ligne' : '❌ Hors ligne'}</div>
+                <div class="info">🖥️ Navigateur: ${navigator.userAgent.split(')')[0]})}</div>
+                <div class="info">📋 Local Storage: ${localStorage.getItem('authToken') ? '✅ Token présent' : '❌ Pas de token'}</div>
+            `;
+        }
+
+        // Auto-test au chargement
+        window.onload = () => {
+            showSystemInfo();
+            testServer();
+        };
+    </script>
+</body>
+</html>

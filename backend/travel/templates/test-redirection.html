@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Redirection - Client vs Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-route"></i> Test de Redirection Automatique</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-info">
+                            <strong>Test :</strong> Vérification que les admins et clients sont redirigés vers les bonnes pages.
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="card border-primary">
+                                    <div class="card-header bg-primary text-white">
+                                        <h5><i class="fas fa-user-shield"></i> Test Admin</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <p>Connexion en tant qu'admin</p>
+                                        <button class="btn btn-primary" onclick="testAdminLogin()">
+                                            <i class="fas fa-sign-in-alt"></i> Se connecter Admin
+                                        </button>
+                                        <div id="adminResult" class="mt-3"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="card border-success">
+                                    <div class="card-header bg-success text-white">
+                                        <h5><i class="fas fa-user"></i> Test Client</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <p>Connexion en tant que client</p>
+                                        <button class="btn btn-success" onclick="testClientLogin()">
+                                            <i class="fas fa-sign-in-alt"></i> Se connecter Client
+                                        </button>
+                                        <div id="clientResult" class="mt-3"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <hr>
+                        
+                        <div class="row">
+                            <div class="col-12">
+                                <h5>Accès Direct aux Dashboards</h5>
+                                <div class="btn-group" role="group">
+                                    <a href="/admin-dashboard/" class="btn btn-outline-primary">
+                                        <i class="fas fa-tachometer-alt"></i> Dashboard Admin
+                                    </a>
+                                    <a href="/client-dashboard/" class="btn btn-outline-success">
+                                        <i class="fas fa-user-circle"></i> Dashboard Client
+                                    </a>
+                                    <a href="/auth/login/" class="btn btn-outline-secondary">
+                                        <i class="fas fa-sign-in-alt"></i> Page de Connexion
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function log(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            const alertClass = type === 'success' ? 'alert-success' : 
+                              type === 'error' ? 'alert-danger' : 'alert-info';
+            element.innerHTML = `<div class="alert ${alertClass}">${message}</div>`;
+        }
+
+        async function testAdminLogin() {
+            log('adminResult', 'Connexion admin en cours...', 'info');
+            
+            try {
+                const response = await fetch('/api/auth/login/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username: 'admin',
+                        password: 'admin123'
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    log('adminResult', `✅ Connexion réussie! Rôle: ${data.user.role}`, 'success');
+                    
+                    if (data.user.is_staff) {
+                        log('adminResult', '🔄 Redirection vers dashboard admin...', 'info');
+                        setTimeout(() => {
+                            window.location.href = '/admin-dashboard/';
+                        }, 2000);
+                    } else {
+                        log('adminResult', '❌ Utilisateur non-admin détecté!', 'error');
+                    }
+                } else {
+                    log('adminResult', `❌ Erreur: ${data.message}`, 'error');
+                }
+            } catch (error) {
+                log('adminResult', `❌ Erreur technique: ${error.message}`, 'error');
+            }
+        }
+
+        async function testClientLogin() {
+            log('clientResult', 'Connexion client en cours...', 'info');
+            
+            try {
+                const response = await fetch('/api/auth/login/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username: 'client1',
+                        password: 'client123'
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    log('clientResult', `✅ Connexion réussie! Rôle: ${data.user.role}`, 'success');
+                    
+                    if (!data.user.is_staff) {
+                        log('clientResult', '🔄 Redirection vers dashboard client...', 'info');
+                        setTimeout(() => {
+                            window.location.href = '/client-dashboard/';
+                        }, 2000);
+                    } else {
+                        log('clientResult', '❌ Utilisateur admin détecté!', 'error');
+                    }
+                } else {
+                    log('clientResult', `❌ Erreur: ${data.message}`, 'error');
+                }
+            } catch (error) {
+                log('clientResult', `❌ Erreur technique: ${error.message}`, 'error');
+            }
+        }
+    </script>
+</body>
+</html>

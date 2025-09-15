@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RoadShield - Backoffice Administrateur</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { 
+            background: #f8f9fa; 
+        }
+        .sidebar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        .sidebar .nav-link {
+            color: rgba(255,255,255,0.8);
+            border-radius: 10px;
+            margin: 5px 0;
+        }
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            background: rgba(255,255,255,0.2);
+            color: white;
+        }
+        .main-content {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .card {
+            border-radius: 15px;
+            border: none;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .btn-add-trip {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            border: none;
+            border-radius: 25px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 px-0">
+                <div class="sidebar p-3">
+                    <h4 class="mb-4">
+                        <i class="fas fa-shield-alt"></i> RoadShield
+                        <div class="text-white-50 small">Administration</div>
+                    </h4>
+                    
+                    <nav class="nav flex-column">
+                        <a class="nav-link active" href="#dashboard" onclick="showSection('dashboard')">
+                            <i class="fas fa-tachometer-alt"></i> Dashboard
+                        </a>
+                        <a class="nav-link" href="#trips" onclick="showSection('trips')">
+                            <i class="fas fa-route"></i> Gestion des Voyages
+                        </a>
+                        <a class="nav-link" href="#buses" onclick="showSection('buses')">
+                            <i class="fas fa-bus"></i> Gestion des Bus
+                        </a>
+                        <a class="nav-link" href="#bookings" onclick="showSection('bookings')">
+                            <i class="fas fa-ticket-alt"></i> Réservations
+                        </a>
+                        <a class="nav-link" href="#payments" onclick="showSection('payments')">
+                            <i class="fas fa-money-bill-wave"></i> Paiements Orange Money
+                        </a>
+                        <a class="nav-link" href="#reports" onclick="showSection('reports')">
+                            <i class="fas fa-chart-bar"></i> Rapports
+                        </a>
+                        <hr class="my-3">
+                        <a class="nav-link" href="/" onclick="logout()">
+                            <i class="fas fa-sign-out-alt"></i> Déconnexion
+                        </a>
+                    </nav>
+                </div>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="col-md-9 col-lg-10">
+                <div class="main-content p-4 m-3">
+                    
+                    <!-- Dashboard Section -->
+                    <div id="dashboard-section" class="content-section">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h2><i class="fas fa-tachometer-alt text-primary"></i> Dashboard</h2>
+                            <div class="text-muted">
+                                <i class="fas fa-user"></i> <span class="admin-name">Administrateur</span>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-3 mb-3">
+                                <div class="card text-center">
+                                    <div class="card-body">
+                                        <i class="fas fa-route fa-2x text-primary mb-2"></i>
+                                        <h3 class="text-primary">12</h3>
+                                        <p class="card-text">Voyages Actifs</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <div class="card text-center">
+                                    <div class="card-body">
+                                        <i class="fas fa-bus fa-2x text-success mb-2"></i>
+                                        <h3 class="text-success">8</h3>
+                                        <p class="card-text">Bus Disponibles</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <div class="card text-center">
+                                    <div class="card-body">
+                                        <i class="fas fa-ticket-alt fa-2x text-warning mb-2"></i>
+                                        <h3 class="text-warning">156</h3>
+                                        <p class="card-text">Réservations</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <div class="card text-center">
+                                    <div class="card-body">
+                                        <i class="fas fa-money-bill-wave fa-2x text-info mb-2"></i>
+                                        <h3 class="text-info">2.5M</h3>
+                                        <p class="card-text">Revenus (XAF)</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Trips Management Section -->
+                    <div id="trips-section" class="content-section" style="display: none;">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h2><i class="fas fa-route text-primary"></i> Gestion des Voyages</h2>
+                            <button class="btn btn-add-trip text-white" onclick="showAddTripModal()">
+                                <i class="fas fa-plus"></i> Nouveau Voyage
+                            </button>
+                        </div>
+                        
+                        <div class="card">
+                            <div class="card-header">
+                                <h5>Voyages Programmés</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Date</th>
+                                                <th>Départ</th>
+                                                <th>Arrivée</th>
+                                                <th>Horaire</th>
+                                                <th>Bus</th>
+                                                <th>Prix</th>
+                                                <th>Places</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="tripsTable">
+                                            <tr>
+                                                <td>15/01/2024</td>
+                                                <td>Yaoundé</td>
+                                                <td>Douala</td>
+                                                <td>08:00 - 12:00</td>
+                                                <td>RD-001</td>
+                                                <td>3500 XAF</td>
+                                                <td>25/50</td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-primary me-1">
+                                                        <i class="fas fa-edit"></i>
+                                                    </button>
+                                                    <button class="btn btn-sm btn-danger">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Other sections would be here -->
+                    <div id="buses-section" class="content-section" style="display: none;">
+                        <h2><i class="fas fa-bus text-success"></i> Gestion des Bus</h2>
+                        <p>Section de gestion des bus...</p>
+                    </div>
+                    
+                    <div id="bookings-section" class="content-section" style="display: none;">
+                        <h2><i class="fas fa-ticket-alt text-warning"></i> Réservations</h2>
+                        <p>Section des réservations...</p>
+                    </div>
+                    
+                    <div id="payments-section" class="content-section" style="display: none;">
+                        <h2><i class="fas fa-money-bill-wave text-info"></i> Paiements Orange Money</h2>
+                        <p>Section des paiements...</p>
+                    </div>
+                    
+                    <div id="reports-section" class="content-section" style="display: none;">
+                        <h2><i class="fas fa-chart-bar text-secondary"></i> Rapports</h2>
+                        <p>Section des rapports...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Nouveau Voyage -->
+    <div class="modal fade" id="addTripModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-plus"></i> Programmer un Nouveau Voyage
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addTripForm">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Ville de Départ *</label>
+                                <select class="form-select" name="departure_city" required>
+                                    <option value="">Sélectionner...</option>
+                                    <option value="Yaoundé">Yaoundé</option>
+                                    <option value="Douala">Douala</option>
+                                    <option value="Bafoussam">Bafoussam</option>
+                                    <option value="Bamenda">Bamenda</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Ville d'Arrivée *</label>
+                                <select class="form-select" name="arrival_city" required>
+                                    <option value="">Sélectionner...</option>
+                                    <option value="Yaoundé">Yaoundé</option>
+                                    <option value="Douala">Douala</option>
+                                    <option value="Bafoussam">Bafoussam</option>
+                                    <option value="Bamenda">Bamenda</option>
+                                    <option value="Garoua">Garoua</option>
+                                    <option value="Maroua">Maroua</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Date *</label>
+                                <input type="date" class="form-control" name="date" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Heure de Départ *</label>
+                                <input type="time" class="form-control" name="departure_time" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Heure d'Arrivée *</label>
+                                <input type="time" class="form-control" name="arrival_time" required>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Bus Assigné *</label>
+                                <select class="form-select" name="bus_number" required>
+                                    <option value="">Sélectionner un bus...</option>
+                                    <option value="RD-001">RD-001 (50 places)</option>
+                                    <option value="RD-002">RD-002 (45 places)</option>
+                                    <option value="RD-003">RD-003 (55 places)</option>
+                                    <option value="RD-004">RD-004 (40 places)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Nombre de Places Disponibles</label>
+                                <input type="number" class="form-control" name="available_seats" min="1" max="60" value="50">
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Prix Aller Simple (XAF) *</label>
+                                <input type="number" class="form-control" name="price_simple" min="1000" step="100" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Prix Aller-Retour (XAF) *</label>
+                                <input type="number" class="form-control" name="price_return" min="1500" step="100" required>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        Annuler
+                    </button>
+                    <button type="button" class="btn btn-add-trip text-white" onclick="saveTrip()">
+                        <i class="fas fa-save"></i> Enregistrer le Voyage
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        class AdminManager {
+            constructor() {
+                this.init();
+            }
+
+            init() {
+                // Vérifier l'authentification admin
+                this.checkAdminAuth();
+            }
+
+            checkAdminAuth() {
+                const token = localStorage.getItem('authToken');
+                const user = JSON.parse(localStorage.getItem('userInfo') || 'null');
+                
+                if (!token || !user) {
+                    window.location.href = '/login/';
+                    return;
+                }
+                
+                if (user.role !== 'admin') {
+                    alert('Accès réservé aux administrateurs');
+                    window.location.href = '/login/';
+                    return;
+                }
+                
+                // Afficher les infos admin
+                document.querySelector('.admin-name').textContent = `${user.first_name} ${user.last_name}`;
+            }
+        }
+
+        // Fonctions de navigation
+        function showSection(sectionName) {
+            // Masquer toutes les sections
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.style.display = 'none';
+            });
+            
+            // Afficher la section sélectionnée
+            document.getElementById(sectionName + '-section').style.display = 'block';
+            
+            // Mettre à jour la navigation
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            event.target.classList.add('active');
+        }
+
+        function showAddTripModal() {
+            // Définir la date minimum à aujourd'hui
+            document.querySelector('input[name="date"]').min = new Date().toISOString().split('T')[0];
+            
+            new bootstrap.Modal(document.getElementById('addTripModal')).show();
+        }
+
+        function saveTrip() {
+            const form = document.getElementById('addTripForm');
+            const formData = new FormData(form);
+            
+            if (!form.checkValidity()) {
+                form.classList.add('was-validated');
+                return;
+            }
+            
+            // Simulation de sauvegarde
+            const tripData = Object.fromEntries(formData);
+            console.log('Nouveau voyage:', tripData);
+            
+            // Fermer le modal
+            bootstrap.Modal.getInstance(document.getElementById('addTripModal')).hide();
+            
+            // Afficher confirmation
+            alert('Voyage programmé avec succès !');
+            
+            // Réinitialiser le formulaire
+            form.reset();
+            form.classList.remove('was-validated');
+        }
+
+        function logout() {
+            if (confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
+                localStorage.removeItem('authToken');
+                localStorage.removeItem('userInfo');
+                window.location.href = '/login/';
+            }
+        }
+
+        // Initialiser
+        document.addEventListener('DOMContentLoaded', () => {
+            new AdminManager();
+        });
+    </script>
+</body>
+</html>

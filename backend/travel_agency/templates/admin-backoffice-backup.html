@@ -1,0 +1,1942 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Backoffice Admin - RoadShield</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* Design moderne et élégant */
+        .sidebar {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+        }
+        
+        .nav-link {
+            color: rgba(255,255,255,0.8) !important;
+            border-radius: 10px;
+            margin: 3px 0;
+            padding: 12px 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-link:hover {
+            background: rgba(255,255,255,0.15);
+            color: white !important;
+            transform: translateX(5px);
+        }
+        
+        .nav-link.active {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white !important;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+        }
+        
+        .main-content {
+            background: #f8f9fa;
+            min-height: 100vh;
+        }
+        
+        /* Cartes élégantes */
+        .elegant-card {
+            background: white;
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+        
+        .elegant-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+        
+        /* Icônes des statistiques */
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+            margin-bottom: 15px;
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: #6c757d;
+            font-weight: 500;
+        }
+        
+        /* Couleurs des cartes */
+        .card-primary .stat-icon {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+        }
+        .card-primary .stat-number {
+            color: #3498db;
+        }
+        
+        .card-success .stat-icon {
+            background: linear-gradient(135deg, #27ae60, #229954);
+        }
+        .card-success .stat-number {
+            color: #27ae60;
+        }
+        
+        .card-warning .stat-icon {
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+        }
+        .card-warning .stat-number {
+            color: #f39c12;
+        }
+        
+        .card-info .stat-icon {
+            background: linear-gradient(135deg, #9b59b6, #8e44ad);
+        }
+        .card-info .stat-number {
+            color: #9b59b6;
+        }
+        
+        /* Titre principal */
+        .page-title {
+            font-size: 2.5rem;
+            font-weight: 300;
+            color: #2c3e50;
+            margin-bottom: 30px;
+        }
+        
+        /* Cartes d'activités */
+        .activity-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
+        }
+        
+        .activity-item {
+            padding: 15px 0;
+            border-bottom: 1px solid #ecf0f1;
+            transition: all 0.3s ease;
+        }
+        
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+        
+        .activity-item:hover {
+            background: rgba(52, 152, 219, 0.05);
+            border-radius: 8px;
+            padding: 15px 10px;
+        }
+        
+        /* Badges modernes */
+        .badge {
+            border-radius: 25px;
+            padding: 8px 15px;
+            font-weight: 500;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+        }
+        
+        /* Boutons élégants */
+        .btn {
+            border-radius: 10px;
+            padding: 10px 20px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            border: none;
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #2980b9, #1f5582);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+        }
+        
+        /* Tableaux élégants */
+        .table {
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        }
+        
+        .table thead th {
+            background: #f8f9fa;
+            border: none;
+            font-weight: 600;
+            color: #2c3e50;
+            padding: 15px;
+        }
+        
+        .table tbody tr {
+            transition: all 0.3s ease;
+        }
+        
+        .table tbody tr:hover {
+            background: rgba(52, 152, 219, 0.05);
+        }
+        
+        /* Modales */
+        .modal-content {
+            border-radius: 15px;
+            border: none;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+        }
+        
+        .modal-header {
+            border-bottom: 1px solid #ecf0f1;
+            border-radius: 15px 15px 0 0;
+        }
+        
+        .modal-footer {
+            border-top: 1px solid #ecf0f1;
+            border-radius: 0 0 15px 15px;
+        }
+        
+        /* Inputs modernes */
+        .form-control, .form-select {
+            border-radius: 10px;
+            border: 2px solid #ecf0f1;
+            padding: 12px 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: #3498db;
+            box-shadow: 0 0 15px rgba(52, 152, 219, 0.2);
+        }
+        
+        /* Progress bars */
+        .progress {
+            height: 8px;
+            border-radius: 10px;
+            background: #ecf0f1;
+        }
+        
+        .progress-bar {
+            border-radius: 10px;
+        }
+        
+        /* Animations subtiles */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .elegant-card {
+            animation: fadeInUp 0.6s ease-out;
+        }
+        
+        /* Status indicators */
+        .status-online {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: #27ae60;
+            border-radius: 50%;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+        
+        .chart-container {
+            background: rgba(255,255,255,0.9);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+
+        /* Futuristic Form Elements */
+        .futuristic-input {
+            background: rgba(255, 255, 255, 0.05) !important;
+            border: 2px solid rgba(13, 110, 253, 0.3) !important;
+            border-radius: 12px !important;
+            color: var(--bs-body-color) !important;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .futuristic-input:focus {
+            border-color: #0d6efd !important;
+            box-shadow: 0 0 20px rgba(13, 110, 253, 0.3) !important;
+            background: rgba(255, 255, 255, 0.1) !important;
+        }
+
+        .futuristic-modal .modal-content {
+            background: linear-gradient(135deg, rgba(13, 110, 253, 0.1), rgba(111, 66, 193, 0.1));
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+        }
+
+        .futuristic-checkbox .form-check-input:checked {
+            background-color: #0d6efd;
+            border-color: #0d6efd;
+            box-shadow: 0 0 10px rgba(13, 110, 253, 0.5);
+        }
+
+        .pulse-button {
+            animation: pulse 2s infinite;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .pulse-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .pulse-button:hover::before {
+            left: 100%;
+        }
+
+        /* Advanced Futuristic Animations */
+        @keyframes floating {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        @keyframes glowPulse {
+            0%, 100% { box-shadow: 0 0 5px rgba(13, 110, 253, 0.3); }
+            50% { box-shadow: 0 0 30px rgba(13, 110, 253, 0.8), 0 0 60px rgba(13, 110, 253, 0.4); }
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -1000px 0; }
+            100% { background-position: 1000px 0; }
+        }
+
+        @keyframes morphing {
+            0%, 100% { border-radius: 20px; }
+            25% { border-radius: 25px 15px 30px 10px; }
+            50% { border-radius: 15px 25px 15px 25px; }
+            75% { border-radius: 30px 10px 20px 25px; }
+        }
+
+        @keyframes neonBlink {
+            0%, 100% { text-shadow: 0 0 5px #0d6efd, 0 0 10px #0d6efd, 0 0 15px #0d6efd; }
+            50% { text-shadow: 0 0 10px #0d6efd, 0 0 20px #0d6efd, 0 0 30px #0d6efd, 0 0 40px #0d6efd; }
+        }
+
+        /* Floating particles background */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .particle {
+            position: absolute;
+            background: linear-gradient(45deg, #0d6efd, #6f42c1);
+            border-radius: 50%;
+            animation: floatParticle 15s infinite linear;
+            opacity: 0.1;
+        }
+
+        @keyframes floatParticle {
+            0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 0.3; }
+            90% { opacity: 0.3; }
+            100% { transform: translateY(-100px) rotate(360deg); opacity: 0; }
+        }
+
+        /* Enhanced stat cards */
+        .futuristic-card {
+            animation: floating 6s ease-in-out infinite, morphing 8s ease-in-out infinite;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .futuristic-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transform: rotate(45deg);
+            animation: shimmer 3s ease-in-out infinite;
+        }
+
+        .futuristic-card:hover {
+            animation-play-state: paused;
+            transform: translateY(-15px) scale(1.05);
+            box-shadow: 0 20px 40px rgba(13, 110, 253, 0.3);
+        }
+
+        .stat-number {
+            animation: neonBlink 2s ease-in-out infinite;
+            font-weight: 900;
+            background: linear-gradient(45deg, #0d6efd, #6f42c1, #20c997);
+            background-size: 300% 300%;
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            -webkit-text-fill-color: transparent;
+            animation: shimmer 2s ease-in-out infinite, neonBlink 3s ease-in-out infinite;
+        }
+
+        /* Glowing sidebar */
+        .sidebar {
+            background: linear-gradient(145deg, 
+                rgba(13, 110, 253, 0.15), 
+                rgba(111, 66, 193, 0.15), 
+                rgba(32, 201, 151, 0.15)
+            );
+            backdrop-filter: blur(20px);
+            border-right: 2px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 50px rgba(13, 110, 253, 0.2);
+        }
+
+        .nav-link {
+            transition: all 0.4s ease;
+            border-radius: 15px;
+            margin: 5px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-link::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .nav-link:hover::before {
+            left: 100%;
+        }
+
+        .nav-link:hover {
+            background: linear-gradient(135deg, rgba(13, 110, 253, 0.3), rgba(111, 66, 193, 0.3));
+            transform: translateX(10px);
+            box-shadow: 0 5px 15px rgba(13, 110, 253, 0.4);
+        }
+
+        .nav-link.active {
+            background: linear-gradient(135deg, #0d6efd, #6f42c1);
+            box-shadow: 0 0 20px rgba(13, 110, 253, 0.6);
+            animation: glowPulse 2s ease-in-out infinite;
+        }
+
+        /* Animated background mesh */
+        .main-content {
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(13, 110, 253, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(111, 66, 193, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(32, 201, 151, 0.1) 0%, transparent 50%);
+            background-size: 100% 100%;
+            animation: backgroundShift 10s ease-in-out infinite;
+            position: relative;
+        }
+
+        @keyframes backgroundShift {
+            0%, 100% { background-position: 0% 0%, 100% 100%, 50% 50%; }
+            33% { background-position: 30% 70%, 70% 30%, 20% 80%; }
+            66% { background-position: 70% 30%, 30% 70%, 80% 20%; }
+        }
+
+        /* Enhanced buttons */
+        .btn {
+            position: relative;
+            overflow: hidden;
+            border-radius: 25px;
+            border: none;
+            transition: all 0.3s ease;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
+            transition: all 0.5s ease;
+            transform: translate(-50%, -50%);
+        }
+
+        .btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #0d6efd, #6f42c1);
+            box-shadow: 0 5px 15px rgba(13, 110, 253, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(13, 110, 253, 0.6);
+        }
+
+        /* Holographic headers */
+        .holographic-text {
+            background: linear-gradient(45deg, #0d6efd, #6f42c1, #20c997, #ffc107);
+            background-size: 400% 400%;
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            -webkit-text-fill-color: transparent;
+            animation: gradientShift 4s ease infinite;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        /* Pulse icon animation */
+        .pulse-icon {
+            animation: pulse 2s ease-in-out infinite;
+            filter: drop-shadow(0 0 10px rgba(13, 110, 253, 0.8));
+        }
+
+        /* Enhanced navigation icons */
+        .nav-link i {
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover i {
+            transform: scale(1.2) rotate(5deg);
+            filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.8));
+        }
+
+        /* Glowing borders for cards */
+        .card {
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            border-color: rgba(13, 110, 253, 0.5);
+            box-shadow: 0 0 30px rgba(13, 110, 253, 0.2);
+            transform: translateY(-5px);
+        }
+
+        /* Animated table rows */
+        .table tr {
+            transition: all 0.3s ease;
+        }
+
+        .table tr:hover {
+            background: linear-gradient(135deg, rgba(13, 110, 253, 0.1), rgba(111, 66, 193, 0.1));
+            transform: scale(1.02);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Loading spinner enhancement */
+        .spinner-border {
+            border-top-color: #0d6efd;
+            animation: spin 1s linear infinite, glowPulse 2s ease-in-out infinite;
+        }
+
+        /* Notification badges */
+        .badge {
+            border-radius: 20px;
+            padding: 8px 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        /* 3D Tilt Effect */
+        [data-tilt] {
+            transform-style: preserve-3d;
+            transition: transform 0.3s ease;
+        }
+
+        [data-tilt]:hover {
+            transform: perspective(1000px) rotateX(5deg) rotateY(5deg) scale(1.02);
+        }
+
+        /* Enhanced progress bars */
+        .stat-progress .progress {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .stat-progress .progress-bar {
+            background: linear-gradient(90deg, currentColor, rgba(255, 255, 255, 0.8));
+            animation: progressGlow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes progressGlow {
+            0% { box-shadow: 0 0 5px currentColor; }
+            100% { box-shadow: 0 0 15px currentColor, 0 0 25px currentColor; }
+        }
+
+        /* Modal enhancements */
+        .modal-content {
+            border-radius: 25px;
+            border: none;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 25px 25px 0 0;
+        }
+
+        .modal-footer {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 0 0 25px 25px;
+        }
+
+        /* Tooltip enhancements */
+        .tooltip {
+            font-size: 0.8rem;
+        }
+
+        .tooltip-inner {
+            background: linear-gradient(135deg, #0d6efd, #6f42c1);
+            border-radius: 10px;
+            padding: 8px 12px;
+        }
+
+        /* Enhanced activity cards */
+        .enhanced-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 25px;
+            padding: 2rem;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .enhanced-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #0d6efd, #6f42c1, #20c997, #ffc107);
+            background-size: 300% 100%;
+            animation: borderFlow 3s ease-in-out infinite;
+        }
+
+        @keyframes borderFlow {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .enhanced-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(13, 110, 253, 0.2);
+        }
+
+        /* Icon wrapper */
+        .icon-wrapper {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, rgba(13, 110, 253, 0.2), rgba(111, 66, 193, 0.2));
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: iconPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes iconPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        /* Live indicator */
+        .live-indicator {
+            width: 12px;
+            height: 12px;
+            background: #28a745;
+            border-radius: 50%;
+            animation: liveBlink 1.5s ease-in-out infinite;
+            box-shadow: 0 0 10px #28a745;
+        }
+
+        @keyframes liveBlink {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.3; transform: scale(0.8); }
+        }
+
+        /* Status indicator */
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            animation: statusPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes statusPulse {
+            0%, 100% { box-shadow: 0 0 5px currentColor; }
+            50% { box-shadow: 0 0 15px currentColor; }
+        }
+
+        /* Activity icons */
+        .activity-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, rgba(13, 110, 253, 0.1), rgba(111, 66, 193, 0.1));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            margin-right: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .activity-item:hover .activity-icon {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        /* Glowing badges */
+        .glow-badge {
+            animation: badgeGlow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes badgeGlow {
+            0% { box-shadow: 0 0 5px currentColor; }
+            100% { box-shadow: 0 0 15px currentColor, 0 0 25px currentColor; }
+        }
+
+        /* Enhanced activity items */
+        .activity-item {
+            padding: 1rem;
+            margin: 0.5rem 0;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .activity-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(5px);
+            border-color: rgba(13, 110, 253, 0.3);
+        }
+
+        /* Animated Background Elements */
+        .background-elements {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -2;
+            overflow: hidden;
+        }
+
+        .bg-shape {
+            position: absolute;
+            background: linear-gradient(45deg, rgba(13, 110, 253, 0.05), rgba(111, 66, 193, 0.05));
+            border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+            animation: morphShape 20s ease-in-out infinite;
+        }
+
+        .shape-1 {
+            width: 300px;
+            height: 300px;
+            top: 10%;
+            left: -5%;
+            animation-delay: 0s;
+        }
+
+        .shape-2 {
+            width: 200px;
+            height: 200px;
+            top: 60%;
+            right: -5%;
+            animation-delay: 7s;
+        }
+
+        .shape-3 {
+            width: 150px;
+            height: 150px;
+            bottom: 20%;
+            left: 30%;
+            animation-delay: 14s;
+        }
+
+        .bg-circle {
+            position: absolute;
+            border: 2px solid rgba(13, 110, 253, 0.1);
+            border-radius: 50%;
+            animation: floatCircle 25s linear infinite;
+        }
+
+        .circle-1 {
+            width: 100px;
+            height: 100px;
+            top: 30%;
+            right: 20%;
+            animation-delay: 0s;
+        }
+
+        .circle-2 {
+            width: 60px;
+            height: 60px;
+            bottom: 40%;
+            left: 10%;
+            animation-delay: 12s;
+        }
+
+        @keyframes morphShape {
+            0%, 100% {
+                border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+                transform: rotate(0deg) scale(1);
+            }
+            25% {
+                border-radius: 58% 42% 75% 25% / 76% 46% 54% 24%;
+                transform: rotate(90deg) scale(1.1);
+            }
+            50% {
+                border-radius: 50% 50% 33% 67% / 55% 27% 73% 45%;
+                transform: rotate(180deg) scale(0.9);
+            }
+            75% {
+                border-radius: 33% 67% 58% 42% / 63% 68% 32% 37%;
+                transform: rotate(270deg) scale(1.05);
+            }
+        }
+
+        @keyframes floatCircle {
+            0% {
+                transform: translateY(0px) rotate(0deg);
+                opacity: 0.3;
+            }
+            50% {
+                transform: translateY(-50px) rotate(180deg);
+                opacity: 0.6;
+            }
+            100% {
+                transform: translateY(0px) rotate(360deg);
+                opacity: 0.3;
+            }
+        }
+
+        /* Dynamic gradient overlay */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(
+                ellipse at top left,
+                rgba(13, 110, 253, 0.1) 0%,
+                transparent 50%
+            ),
+            radial-gradient(
+                ellipse at top right,
+                rgba(111, 66, 193, 0.1) 0%,
+                transparent 50%
+            ),
+            radial-gradient(
+                ellipse at bottom center,
+                rgba(32, 201, 151, 0.1) 0%,
+                transparent 50%
+            );
+            pointer-events: none;
+            z-index: -1;
+            animation: gradientShift 15s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body>
+    <!-- Floating Particles -->
+    <div class="particles" id="particles"></div>
+    
+    <!-- Animated Background Elements -->
+    <div class="background-elements">
+        <div class="bg-shape shape-1"></div>
+        <div class="bg-shape shape-2"></div>
+        <div class="bg-shape shape-3"></div>
+        <div class="bg-circle circle-1"></div>
+        <div class="bg-circle circle-2"></div>
+    </div>
+    
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 px-0">
+                <div class="sidebar p-3">
+                    <div class="text-center mb-4">
+                        <h4 class="text-white holographic-text">
+                            <i class="fas fa-shield-alt pulse-icon"></i> RoadShield
+                        </h4>
+                        <small class="text-white-50">Sentinelle du Transport</small>
+                    </div>
+                    
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="#" onclick="showSection('dashboard')">
+                                <i class="fas fa-tachometer-alt me-2"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" onclick="showSection('trips')">
+                                <i class="fas fa-route me-2"></i> Voyages
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" onclick="showSection('buses')">
+                                <i class="fas fa-bus me-2"></i> Autobus
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" onclick="showSection('drivers')">
+                                <i class="fas fa-user-tie me-2"></i> Chauffeurs
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" onclick="showSection('reservations')">
+                                <i class="fas fa-ticket-alt me-2"></i> Réservations
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" onclick="showSection('tickets')">
+                                <i class="fas fa-receipt me-2"></i> Tickets
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/reports/">
+                                <i class="fas fa-chart-line me-2"></i> Rapports
+                            </a>
+                        </li>
+                        <hr class="text-white-50">
+                        <li class="nav-item">
+                            <a class="nav-link" href="/" onclick="logout()">
+                                <i class="fas fa-sign-out-alt me-2"></i> Déconnexion
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-9 col-lg-10 content-area">
+                <!-- Dashboard Section -->
+                <div id="dashboard-section" class="section-content p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-5">
+                        <h1 class="holographic-text display-4 fw-bold">Dashboard Futuriste</h1>
+                        <div class="d-flex align-items-center">
+                            <div class="pulse-dot"></div>
+                            <span class="badge bg-success fs-6">Système Opérationnel</span>
+                        </div>
+                    </div>
+
+                    <!-- Statistics Cards Futuristes -->
+                    <div class="row mb-5">
+                        <div class="col-md-3 mb-4">
+                            <div class="futuristic-card p-4 text-center h-100" data-tilt>
+                                <div class="stat-icon mx-auto" style="background: linear-gradient(135deg, #0d6efd, #4dabf7);">
+                                    <i class="fas fa-route"></i>
+                                </div>
+                                <div class="stat-number display-4" id="tripsToday">0</div>
+                                <div class="stat-label">Voyages Aujourd'hui</div>
+                                <div class="stat-progress mt-2">
+                                    <div class="progress" style="height: 6px; border-radius: 10px;">
+                                        <div class="progress-bar bg-primary" style="width: 75%; border-radius: 10px;" 
+                                             data-bs-toggle="tooltip" title="75% de l'objectif journalier"></div>
+                                    </div>
+                                </div>
+                                <small class="text-muted mt-1">↗️ +12% vs hier</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-4">
+                            <div class="futuristic-card p-4 text-center h-100" data-tilt>
+                                <div class="stat-icon mx-auto" style="background: linear-gradient(135deg, #28a745, #20c997);">
+                                    <i class="fas fa-ticket-alt"></i>
+                                </div>
+                                <div class="stat-number display-4" id="totalReservations">0</div>
+                                <div class="stat-label">Réservations Actives</div>
+                                <div class="stat-progress mt-2">
+                                    <div class="progress" style="height: 6px; border-radius: 10px;">
+                                        <div class="progress-bar bg-success" style="width: 89%; border-radius: 10px;"
+                                             data-bs-toggle="tooltip" title="89% de taux d'occupation"></div>
+                                    </div>
+                                </div>
+                                <small class="text-success mt-1">↗️ +8% vs hier</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-4">
+                            <div class="futuristic-card p-4 text-center h-100" data-tilt>
+                                <div class="stat-icon mx-auto" style="background: linear-gradient(135deg, #ffc107, #fd7e14);">
+                                    <i class="fas fa-bus"></i>
+                                </div>
+                                <div class="stat-number display-4" id="activeBuses">0</div>
+                                <div class="stat-label">Bus en Service</div>
+                                <div class="stat-progress mt-2">
+                                    <div class="progress" style="height: 6px; border-radius: 10px;">
+                                        <div class="progress-bar bg-warning" style="width: 95%; border-radius: 10px;"
+                                             data-bs-toggle="tooltip" title="95% de la flotte active"></div>
+                                    </div>
+                                </div>
+                                <small class="text-warning mt-1">🚌 2 en maintenance</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-4">
+                            <div class="futuristic-card p-4 text-center h-100" data-tilt>
+                                <div class="stat-icon mx-auto" style="background: linear-gradient(135deg, #17a2b8, #6f42c1);">
+                                    <i class="fas fa-money-bill-wave"></i>
+                                </div>
+                                <div class="stat-number display-4" id="totalRevenue">0</div>
+                                <div class="stat-label">Revenus (XAF)</div>
+                                <div class="stat-progress mt-2">
+                                    <div class="progress" style="height: 6px; border-radius: 10px;">
+                                        <div class="progress-bar bg-info" style="width: 82%; border-radius: 10px;"
+                                             data-bs-toggle="tooltip" title="82% de l'objectif mensuel"></div>
+                                    </div>
+                                </div>
+                                <small class="text-info mt-1">💰 +15% vs mois dernier</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Activités et Analytics -->
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <div class="activity-card enhanced-card">
+                                <div class="d-flex align-items-center mb-4">
+                                    <div class="icon-wrapper me-3">
+                                        <i class="fas fa-clock text-primary fs-4"></i>
+                                    </div>
+                                    <h5 class="mb-0 holographic-text">Activités en Temps Réel</h5>
+                                    <div class="ms-auto">
+                                        <div class="live-indicator"></div>
+                                    </div>
+                                </div>
+                                <div id="recentActivities">
+                                    <div class="activity-item">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div class="d-flex align-items-center">
+                                                <div class="activity-icon">🎫</div>
+                                                <div>
+                                                    <strong>Nouvelle réservation</strong><br>
+                                                    <small class="text-muted">Douala → Yaoundé • 2 places</small>
+                                                </div>
+                                            </div>
+                                            <span class="badge bg-success glow-badge">Confirmé</span>
+                                        </div>
+                                    </div>
+                                    <div class="activity-item">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div class="d-flex align-items-center">
+                                                <div class="activity-icon">🚌</div>
+                                                <div>
+                                                    <strong>Bus en route</strong><br>
+                                                    <small class="text-muted">CM-1234-AB vers Bafoussam</small>
+                                                </div>
+                                            </div>
+                                            <span class="badge bg-warning glow-badge">En voyage</span>
+                                        </div>
+                                    </div>
+                                    <div class="activity-item">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div class="d-flex align-items-center">
+                                                <div class="activity-icon">🔧</div>
+                                                <div>
+                                                    <strong>Maintenance programmée</strong><br>
+                                                    <small class="text-muted">CM-5678-CD demain matin</small>
+                                                </div>
+                                            </div>
+                                            <span class="badge bg-info glow-badge">Planifié</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <div class="chart-container enhanced-card">
+                                <div class="d-flex align-items-center mb-4">
+                                    <div class="icon-wrapper me-3">
+                                        <i class="fas fa-chart-line text-success fs-4"></i>
+                                    </div>
+                                    <h5 class="mb-0 holographic-text">Analytics Avancées</h5>
+                                    <div class="ms-auto">
+                                        <div class="status-indicator bg-success"></div>
+                                    </div>
+                                </div>
+                                <div class="row text-center">
+                                    <div class="col-6 mb-3">
+                                        <div class="border-end">
+                                            <h4 class="text-primary">98%</h4>
+                                            <small class="text-muted">Taux de satisfaction</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-6 mb-3">
+                                        <h4 class="text-success">156</h4>
+                                        <small class="text-muted">Km moyens/jour</small>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="border-end">
+                                            <h4 class="text-warning">2.3min</h4>
+                                            <small class="text-muted">Retard moyen</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <h4 class="text-info">24/7</h4>
+                                        <small class="text-muted">Monitoring actif</small>
+                                    </div>
+                                </div>
+                                <div class="mt-4 p-3 bg-light rounded">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span>Performance globale</span>
+                                        <span class="badge bg-success">Excellent</span>
+                                    </div>
+                                    <div class="progress mt-2" style="height: 8px;">
+                                        <div class="progress-bar bg-success" style="width: 94%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Trips Section -->
+                <div id="trips-section" class="section-content p-4" style="display: none;">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2>Gestion des Voyages</h2>
+                        <button class="btn btn-primary" onclick="showCreateTripModal()">
+                            <i class="fas fa-plus"></i> Nouveau Voyage
+                        </button>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Route</th>
+                                            <th>Départ</th>
+                                            <th>Prix (XAF)</th>
+                                            <th>Places</th>
+                                            <th>Bus</th>
+                                            <th>Statut</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tripsTable">
+                                        <tr>
+                                            <td colspan="8" class="text-center">
+                                                <div class="spinner-border" role="status"></div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Buses Section -->
+                <div id="buses-section" class="section-content p-4" style="display: none;">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2>Gestion des Autobus</h2>
+                        <button class="btn btn-primary" onclick="showCreateBusModal()">
+                            <i class="fas fa-plus"></i> Nouveau Bus
+                        </button>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Immatriculation</th>
+                                            <th>Marque/Modèle</th>
+                                            <th>Capacité</th>
+                                            <th>Chauffeur</th>
+                                            <th>Équipements</th>
+                                            <th>Statut</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="busesTable">
+                                        <tr>
+                                            <td colspan="7" class="text-center">
+                                                <div class="spinner-border" role="status"></div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Drivers Section -->
+                <div id="drivers-section" class="section-content p-4" style="display: none;">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2>Gestion des Chauffeurs</h2>
+                        <button class="btn btn-primary" onclick="showCreateDriverModal()">
+                            <i class="fas fa-plus"></i> Nouveau Chauffeur
+                        </button>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Photo</th>
+                                            <th>Nom Complet</th>
+                                            <th>Téléphone</th>
+                                            <th>Permis</th>
+                                            <th>Bus Assigné</th>
+                                            <th>Note</th>
+                                            <th>Statut</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="driversTable">
+                                        <tr>
+                                            <td colspan="8" class="text-center">
+                                                <div class="spinner-border" role="status"></div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reservations Section -->
+                <div id="reservations-section" class="section-content p-4" style="display: none;">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2>Gestion des Réservations</h2>
+                        <div>
+                            <div class="btn-group me-2">
+                                <button class="btn btn-outline-secondary btn-sm" onclick="filterReservations('all')">Toutes</button>
+                                <button class="btn btn-outline-warning btn-sm" onclick="filterReservations('pending')">En attente</button>
+                                <button class="btn btn-outline-success btn-sm" onclick="filterReservations('confirmed')">Confirmées</button>
+                                <button class="btn btn-outline-danger btn-sm" onclick="filterReservations('cancelled')">Annulées</button>
+                            </div>
+                            <button class="btn btn-outline-primary" onclick="loadReservations()">
+                                <i class="fas fa-sync-alt"></i> Actualiser
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Statistics Row -->
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h5 class="text-warning" id="pendingCount">0</h5>
+                                    <small>En attente</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h5 class="text-success" id="confirmedCount">0</h5>
+                                    <small>Confirmées</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h5 class="text-info" id="totalRevenue">0 XAF</h5>
+                                    <small>Revenus</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h5 class="text-primary" id="totalPassengers">0</h5>
+                                    <small>Passagers</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>N° Réservation</th>
+                                            <th>Passager</th>
+                                            <th>Voyage</th>
+                                            <th>Places</th>
+                                            <th>Montant</th>
+                                            <th>Paiement</th>
+                                            <th>Statut</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="reservationsTable">
+                                        <tr>
+                                            <td colspan="8" class="text-center">
+                                                <div class="spinner-border" role="status"></div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tickets Section -->
+                <div id="tickets-section" class="section-content p-4" style="display: none;">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2>Gestion des Tickets</h2>
+                        <button class="btn btn-success" onclick="generateAllTickets()">
+                            <i class="fas fa-print"></i> Générer Tous les Tickets
+                        </button>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>N° Ticket</th>
+                                            <th>Passager</th>
+                                            <th>Route</th>
+                                            <th>Départ</th>
+                                            <th>Bus</th>
+                                            <th>Places</th>
+                                            <th>Statut</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="ticketsTable">
+                                        <tr>
+                                            <td colspan="8" class="text-center">
+                                                <div class="spinner-border" role="status"></div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <!-- Create Trip Modal -->
+    <div class="modal fade" id="createTripModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Nouveau Voyage</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="createTripForm">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Ville de Départ</label>
+                                <input type="text" class="form-control" name="departure_city" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Ville d'Arrivée</label>
+                                <input type="text" class="form-control" name="arrival_city" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Heure de Départ</label>
+                                <input type="datetime-local" class="form-control" name="departure_time" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Heure d'Arrivée</label>
+                                <input type="datetime-local" class="form-control" name="arrival_time" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Bus</label>
+                                <select class="form-select" name="bus_id" required id="busSelect">
+                                    <option value="">Sélectionner un bus</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Prix (XAF)</label>
+                                <input type="number" class="form-control" name="price" value="15000" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Places Disponibles</label>
+                                <input type="number" class="form-control" name="available_seats" value="50" required>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-primary" onclick="createTrip()">Créer le Voyage</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Trip Modal -->
+    <div class="modal fade" id="editTripModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Modifier le Voyage</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editTripForm">
+                        <input type="hidden" id="editTripId" name="trip_id">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Ville de Départ</label>
+                                <input type="text" class="form-control" id="editDepartureCity" name="departure_city" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Ville d'Arrivée</label>
+                                <input type="text" class="form-control" id="editArrivalCity" name="arrival_city" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Heure de Départ</label>
+                                <input type="datetime-local" class="form-control" id="editDepartureTime" name="departure_time" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Heure d'Arrivée</label>
+                                <input type="datetime-local" class="form-control" id="editArrivalTime" name="arrival_time" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Bus</label>
+                                <select class="form-select" id="editBusSelect" name="bus_id" required>
+                                    <option value="">Sélectionner un bus</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Prix (XAF)</label>
+                                <input type="number" class="form-control" id="editPrice" name="price" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Places Disponibles</label>
+                                <input type="number" class="form-control" id="editAvailableSeats" name="available_seats" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Statut</label>
+                                <select class="form-select" id="editStatus" name="status" required>
+                                    <option value="scheduled">Programmé</option>
+                                    <option value="in_progress">En cours</option>
+                                    <option value="completed">Terminé</option>
+                                    <option value="cancelled">Annulé</option>
+                                </select>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-primary" onclick="updateTrip()">Sauvegarder</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Bus Modal -->
+    <div class="modal fade" id="createBusModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content futuristic-modal">
+                <div class="modal-header">
+                    <h5 class="modal-title holographic-text">
+                        <i class="fas fa-bus me-2"></i>Nouveau Bus Futuriste
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="createBusForm">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Numéro d'Immatriculation *</label>
+                                <input type="text" class="form-control futuristic-input" name="registration_number" 
+                                       placeholder="CM-1234-AB" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Statut Opérationnel *</label>
+                                <select class="form-select futuristic-input" name="status" required>
+                                    <option value="">🔹 Sélectionner le statut</option>
+                                    <option value="disponible">🟢 Disponible</option>
+                                    <option value="en_voyage">🟡 En voyage</option>
+                                    <option value="en_panne">🔴 En panne</option>
+                                    <option value="maintenance">🔧 En maintenance</option>
+                                    <option value="hors_service">⚫ Hors service</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Marque *</label>
+                                <input type="text" class="form-control futuristic-input" name="brand" 
+                                       placeholder="Ex: Mercedes, Volvo, Scania" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Modèle *</label>
+                                <input type="text" class="form-control futuristic-input" name="model" 
+                                       placeholder="Ex: Sprinter, 9700, Touring" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Capacité (places) *</label>
+                                <input type="number" class="form-control futuristic-input" name="capacity" 
+                                       value="50" min="10" max="70" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Année de Fabrication</label>
+                                <input type="number" class="form-control futuristic-input" name="year" 
+                                       value="2023" min="2010" max="2025">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Kilométrage</label>
+                                <input type="number" class="form-control futuristic-input" name="mileage" 
+                                       placeholder="Ex: 150000" min="0">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Chauffeur Principal</label>
+                                <input type="text" class="form-control futuristic-input" name="driver_name" 
+                                       placeholder="Nom complet du chauffeur">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Téléphone Chauffeur</label>
+                                <input type="tel" class="form-control futuristic-input" name="driver_phone" 
+                                       placeholder="+237 6XX XXX XXX">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Route Habituelle</label>
+                            <input type="text" class="form-control futuristic-input" name="default_route" 
+                                   placeholder="Ex: Douala ↔ Yaoundé">
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <label class="form-label">Équipements & Options</label>
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <div class="form-check futuristic-checkbox">
+                                            <input class="form-check-input" type="checkbox" name="has_ac" id="hasAc">
+                                            <label class="form-check-label" for="hasAc">
+                                                ❄️ Climatisation
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-check futuristic-checkbox">
+                                            <input class="form-check-input" type="checkbox" name="has_wifi" id="hasWifi">
+                                            <label class="form-check-label" for="hasWifi">
+                                                📶 WiFi Gratuit
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-check futuristic-checkbox">
+                                            <input class="form-check-input" type="checkbox" name="has_usb" id="hasUsb">
+                                            <label class="form-check-label" for="hasUsb">
+                                                🔌 Prises USB
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-check futuristic-checkbox">
+                                            <input class="form-check-input" type="checkbox" name="has_toilet" id="hasToilet">
+                                            <label class="form-check-label" for="hasToilet">
+                                                🚻 Toilettes
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Notes & Observations</label>
+                            <textarea class="form-control futuristic-input" name="notes" rows="3" 
+                                      placeholder="Informations supplémentaires, historique de maintenance, etc."></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i>Annuler
+                    </button>
+                    <button type="button" class="btn btn-primary pulse-button" onclick="createBus()">
+                        <i class="fas fa-plus me-1"></i>Ajouter le Bus
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Bus Modal -->
+    <div class="modal fade" id="editBusModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Modifier le Bus</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editBusForm">
+                        <input type="hidden" id="editBusId" name="bus_id">
+                        <div class="mb-3">
+                            <label class="form-label">Numéro d'Immatriculation</label>
+                            <input type="text" class="form-control" id="editRegistrationNumber" name="registration_number" required>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Marque</label>
+                                <input type="text" class="form-control" id="editBrand" name="brand" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Modèle</label>
+                                <input type="text" class="form-control" id="editModel" name="model" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Capacité</label>
+                                <input type="number" class="form-control" id="editCapacity" name="capacity" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Année</label>
+                                <input type="number" class="form-control" id="editYear" name="year" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Chauffeur Assigné</label>
+                            <select class="form-select" id="editDriverSelect" name="driver_id">
+                                <option value="">Aucun chauffeur assigné</option>
+                            </select>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="editHasAc" name="has_ac">
+                                    <label class="form-check-label" for="editHasAc">Climatisation</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="editHasWifi" name="has_wifi">
+                                    <label class="form-check-label" for="editHasWifi">WiFi</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Statut</label>
+                            <select class="form-select" id="editBusStatus" name="status" required>
+                                <option value="active">Actif</option>
+                                <option value="maintenance">En maintenance</option>
+                                <option value="inactive">Inactif</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-primary" onclick="updateBus()">Sauvegarder</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Driver Modal -->
+    <div class="modal fade" id="createDriverModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Nouveau Chauffeur</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="createDriverForm">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Prénom</label>
+                                <input type="text" class="form-control" name="first_name" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Nom</label>
+                                <input type="text" class="form-control" name="last_name" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Téléphone</label>
+                                <input type="tel" class="form-control" name="phone" placeholder="+237 6XX XXX XXX" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Email</label>
+                                <input type="email" class="form-control" name="email">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Numéro de Permis</label>
+                                <input type="text" class="form-control" name="license_number" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Expiration Permis</label>
+                                <input type="date" class="form-control" name="license_expiry" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Date d'Embauche</label>
+                                <input type="date" class="form-control" name="hire_date" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Salaire (XAF)</label>
+                                <input type="number" class="form-control" name="salary" value="150000">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Adresse</label>
+                            <textarea class="form-control" name="address" rows="2"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-primary" onclick="createDriver()">Ajouter le Chauffeur</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="admin-backoffice-simple.js"></script>
+    
+    <script>
+        // Create floating particles
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            if (!particlesContainer) return;
+            
+            // Clear existing particles
+            particlesContainer.innerHTML = '';
+            
+            for (let i = 0; i < 20; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                
+                // Random size between 2-8px
+                const size = Math.random() * 6 + 2;
+                particle.style.width = size + 'px';
+                particle.style.height = size + 'px';
+                
+                // Random horizontal position
+                particle.style.left = Math.random() * 100 + '%';
+                
+                // Random animation delay
+                particle.style.animationDelay = Math.random() * 15 + 's';
+                
+                // Random animation duration
+                particle.style.animationDuration = (Math.random() * 10 + 10) + 's';
+                
+                particlesContainer.appendChild(particle);
+            }
+        }
+        
+        // Enhanced counter animation
+        function animateCounters() {
+            const counters = document.querySelectorAll('.stat-number');
+            counters.forEach(counter => {
+                const target = parseInt(counter.textContent.replace(/,/g, ''));
+                if (isNaN(target)) return;
+                
+                let current = 0;
+                const increment = target / 100;
+                const timer = setInterval(() => {
+                    current += increment;
+                    if (current >= target) {
+                        current = target;
+                        clearInterval(timer);
+                    }
+                    
+                    // Format numbers with commas for large values
+                    if (target > 1000) {
+                        counter.textContent = Math.floor(current).toLocaleString();
+                    } else {
+                        counter.textContent = Math.floor(current);
+                    }
+                }, 20);
+            });
+        }
+        
+        // Ripple effect for buttons
+        function createRipple(event) {
+            const button = event.currentTarget;
+            const ripple = document.createElement('span');
+            const rect = button.getBoundingClientRect();
+            const size = Math.max(rect.width, rect.height);
+            const x = event.clientX - rect.left - size / 2;
+            const y = event.clientY - rect.top - size / 2;
+            
+            ripple.style.width = ripple.style.height = size + 'px';
+            ripple.style.left = x + 'px';
+            ripple.style.top = y + 'px';
+            ripple.classList.add('ripple');
+            
+            button.appendChild(ripple);
+            
+            setTimeout(() => {
+                ripple.remove();
+            }, 600);
+        }
+        
+        // Initialize animations when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            createParticles();
+            
+            // Delay counter animation for visual effect
+            setTimeout(animateCounters, 1000);
+            
+            // Add ripple effect to all buttons
+            document.querySelectorAll('.btn').forEach(button => {
+                button.addEventListener('click', createRipple);
+            });
+            
+            // Initialize tooltips
+            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+            
+            // Add 3D tilt effect
+            document.querySelectorAll('[data-tilt]').forEach(element => {
+                element.addEventListener('mousemove', handleTilt);
+                element.addEventListener('mouseleave', resetTilt);
+            });
+            
+            // Recreate particles every 30 seconds
+            setInterval(createParticles, 30000);
+        });
+        
+        // 3D Tilt effect
+        function handleTilt(e) {
+            const card = e.currentTarget;
+            const rect = card.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+            const rotateX = (y - centerY) / 10;
+            const rotateY = (centerX - x) / 10;
+            
+            card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.02)`;
+        }
+        
+        function resetTilt(e) {
+            const card = e.currentTarget;
+            card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) scale(1)';
+        }
+        
+        // Enhanced navigation active state
+        function showSection(sectionName) {
+            // Remove active class from all nav links
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            
+            // Add active class to clicked nav link
+            event.target.closest('.nav-link').classList.add('active');
+            
+            // Call the original showSection function
+            if (window.admin && window.admin.showSection) {
+                window.admin.showSection(sectionName);
+            }
+        }
+    </script>
+    
+    <style>
+        /* Ripple effect styles */
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.6);
+            transform: scale(0);
+            animation: ripple-animation 0.6s linear;
+            pointer-events: none;
+        }
+        
+        @keyframes ripple-animation {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+    </style>
+</body>
+</html>

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Simple - Création Chauffeur</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .form-group { margin: 10px 0; }
+        label { display: block; margin-bottom: 5px; }
+        input { padding: 8px; width: 300px; border: 1px solid #ccc; }
+        button { padding: 10px 20px; background: #007bff; color: white; border: none; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .result { margin-top: 20px; padding: 10px; border: 1px solid #ccc; }
+    </style>
+</head>
+<body>
+    <h1>Test Simple - Création Chauffeur</h1>
+    
+    <form id="testForm">
+        <div class="form-group">
+            <label for="username">Nom d'utilisateur *</label>
+            <input type="text" id="username" name="username" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="first_name">Prénom *</label>
+            <input type="text" id="first_name" name="first_name" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="last_name">Nom *</label>
+            <input type="text" id="last_name" name="last_name" required>
+        </div>
+        
+        <button type="button" onclick="testCreateDriver()">Créer le chauffeur</button>
+    </form>
+    
+    <div id="result" class="result" style="display: none;"></div>
+    
+    <script>
+        function testCreateDriver() {
+            const form = document.getElementById('testForm');
+            const resultDiv = document.getElementById('result');
+            
+            // Récupérer les valeurs
+            const username = form.username.value;
+            const firstName = form.first_name.value;
+            const lastName = form.last_name.value;
+            
+            if (!username || !firstName || !lastName) {
+                alert('Veuillez remplir tous les champs');
+                return;
+            }
+            
+            // Préparer les données
+            const params = new URLSearchParams();
+            params.append('username', username);
+            params.append('first_name', firstName);
+            params.append('last_name', lastName);
+            
+            console.log('Envoi vers: http://localhost:8009/api/drivers/create/');
+            console.log('Données:', params.toString());
+            
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = '<p>⏳ Envoi en cours...</p>';
+            
+            // Envoyer la requête
+            fetch('http://localhost:8009/api/drivers/create/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: params.toString()
+            })
+            .then(response => {
+                console.log('Status:', response.status);
+                console.log('Headers:', response.headers);
+                return response.text();
+            })
+            .then(text => {
+                console.log('Réponse brute:', text);
+                resultDiv.innerHTML = `
+                    <h3>✅ Réponse reçue</h3>
+                    <pre>${text}</pre>
+                `;
+                
+                // Essayer de parser comme JSON
+                try {
+                    const json = JSON.parse(text);
+                    if (json.status === 'success') {
+                        resultDiv.innerHTML += '<p style="color: green;">🎉 Succès confirmé !</p>';
+                        form.reset();
+                    }
+                } catch (e) {
+                    console.log('Pas du JSON valide, mais ça marche peut-être');
+                }
+            })
+            .catch(error => {
+                console.error('Erreur:', error);
+                resultDiv.innerHTML = `
+                    <h3>❌ Erreur</h3>
+                    <p>Erreur: ${error.message}</p>
+                    <p>Vérifiez que le serveur Django tourne sur le port 8009</p>
+                `;
+            });
+        }
+    </script>
+</body>
+</html>

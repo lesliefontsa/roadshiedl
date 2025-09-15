@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RoadShield Travel Agency - Accueil</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            min-height: 100vh; 
+        }
+        .card { 
+            border-radius: 15px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1); 
+        }
+        .btn-custom { 
+            border-radius: 10px; 
+            padding: 12px 24px; 
+        }
+    </style>
+</head>
+<body class="d-flex align-items-center">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-10">
+                <div class="card">
+                    <div class="card-body p-5">
+                        <div class="text-center mb-4">
+                            <h1 class="display-4 mb-3">
+                                <i class="fas fa-shield-alt text-primary"></i> 
+                                RoadShield Travel Agency
+                            </h1>
+                            <p class="lead">Système Complet de Gestion de Transport</p>
+                            <div class="badge bg-success fs-6">✅ Serveur Actif - Port 8002</div>
+                        </div>
+                        
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <div class="card h-100 border-primary">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-users fa-3x text-primary mb-3"></i>
+                                        <h4>Interfaces Utilisateurs</h4>
+                                        <div class="d-grid gap-2">
+                                            <a href="/login/" class="btn btn-primary btn-custom">
+                                                <i class="fas fa-sign-in-alt"></i> Connexion
+                                            </a>
+                                            <a href="/register/" class="btn btn-success btn-custom">
+                                                <i class="fas fa-user-plus"></i> Créer un Compte
+                                            </a>
+                                            <a href="/client/" class="btn btn-outline-primary btn-custom">
+                                                <i class="fas fa-shopping-cart"></i> Interface Client
+                                            </a>
+                                            <a href="/ticket/" class="btn btn-outline-info btn-custom">
+                                                <i class="fas fa-ticket-alt"></i> Voir un Ticket
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="card h-100 border-warning">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-cogs fa-3x text-warning mb-3"></i>
+                                        <h4>Administration</h4>
+                                        <div class="d-grid gap-2">
+                                            <a href="/admin-backoffice/" class="btn btn-warning btn-custom">
+                                                <i class="fas fa-tools"></i> Backoffice Admin
+                                            </a>
+                                            <a href="/admin-dashboard/" class="btn btn-outline-warning btn-custom">
+                                                <i class="fas fa-tachometer-alt"></i> Dashboard Temps Réel
+                                            </a>
+                                            <a href="/reports/" class="btn btn-outline-warning btn-custom">
+                                                <i class="fas fa-chart-line"></i> Rapports Orange Money
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mt-4">
+                            <div class="col-md-6">
+                                <div class="card border-info">
+                                    <div class="card-body">
+                                        <h5 class="card-title">
+                                            <i class="fas fa-user-shield"></i> Comptes Admin
+                                        </h5>
+                                        <ul class="list-unstyled">
+                                            <li><code>admin</code> / <code>admin123</code> - Administrateur</li>
+                                            <li><code>manager</code> / <code>manager123</code> - Manager</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="card border-success">
+                                    <div class="card-body">
+                                        <h5 class="card-title">
+                                            <i class="fas fa-users"></i> Comptes Clients
+                                        </h5>
+                                        <ul class="list-unstyled">
+                                            <li><code>client1</code> / <code>client123</code> - Jean Dupont</li>
+                                            <li><code>marie</code> / <code>marie123</code> - Marie Ngono</li>
+                                            <li><code>paul</code> / <code>paul123</code> - Paul Biya</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <div class="card border-secondary">
+                                    <div class="card-body">
+                                        <h5 class="card-title">
+                                            <i class="fas fa-code"></i> APIs & Développement
+                                        </h5>
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <a href="/api/health/" class="btn btn-outline-secondary btn-sm me-2">
+                                                    <i class="fas fa-heartbeat"></i> API Health
+                                                </a>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <a href="/admin/" class="btn btn-outline-secondary btn-sm me-2">
+                                                    <i class="fas fa-database"></i> Django Admin
+                                                </a>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <span class="badge bg-secondary">Orange Money Intégré</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="text-center mt-4">
+                            <small class="text-muted">
+                                RoadShield Travel Agency v2.0 - Système Complet avec Orange Money & Arduino
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Redirection automatique si utilisateur connecté
+        document.addEventListener('DOMContentLoaded', () => {
+            const token = localStorage.getItem('authToken');
+            const user = JSON.parse(localStorage.getItem('userInfo') || 'null');
+            
+            if (token && user) {
+                // Afficher un message de bienvenue
+                const welcomeAlert = document.createElement('div');
+                welcomeAlert.className = 'alert alert-info alert-dismissible fade show position-fixed';
+                welcomeAlert.style.cssText = 'top: 20px; right: 20px; z-index: 9999;';
+                welcomeAlert.innerHTML = `
+                    <strong>Connecté en tant que:</strong> ${user.first_name} ${user.last_name} (${user.role})
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                `;
+                document.body.appendChild(welcomeAlert);
+                
+                // Auto-suppression après 5 secondes
+                setTimeout(() => {
+                    if (welcomeAlert.parentNode) {
+                        welcomeAlert.parentNode.removeChild(welcomeAlert);
+                    }
+                }, 5000);
+            }
+        });
+    </script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

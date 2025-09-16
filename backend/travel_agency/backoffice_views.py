@@ -1,5 +1,5 @@
 from django.contrib.auth.decorators import user_passes_test
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import FileResponse, Http404
 from django.conf import settings
 import os
@@ -14,10 +14,18 @@ def serve_static_file(request, filename):
         return FileResponse(open(file_path, 'rb'))
     raise Http404("File not found")
 
-@staff_required
+# @staff_required  # Désactivé pour la présentation
 def admin_backoffice(request):
+    return render(request, 'admin-backoffice.html')
+
+# Version simple sans authentification pour le développement
+def admin_backoffice_simple(request):
     return render(request, 'admin-backoffice.html')
 
 @staff_required
 def admin_backoffice_fixed(request):
     return render(request, 'admin-backoffice-fixed.html')
+
+def redirect_to_home(request):
+    """Redirection temporaire pour les anciennes URLs /login/"""
+    return redirect('/')

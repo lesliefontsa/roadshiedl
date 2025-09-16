@@ -190,21 +190,30 @@
                                 <p class="text-muted">Consultez les voyages disponibles et effectuez vos réservations</p>
                             </div>
                             
-                            <div id="clientAlert"></div>
+                            <!-- Messages Django -->
+                            {% if messages %}
+                                {% for message in messages %}
+                                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                        {{ message }}
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
                             
-                            <form id="clientLoginForm">
+                            <form method="POST" action="/auth/login-client/">
+                                {% csrf_token %}
                                 <div class="mb-3">
                                     <label class="form-label">
                                         <i class="fas fa-user me-2"></i>Nom d'utilisateur Client
                                     </label>
-                                    <input type="text" class="form-control" id="clientUsername" required placeholder="Entrez votre nom d'utilisateur">
+                                    <input type="text" class="form-control" name="username" required placeholder="Entrez votre nom d'utilisateur">
                                 </div>
                                 
                                 <div class="mb-3">
                                     <label class="form-label">
                                         <i class="fas fa-lock me-2"></i>Mot de passe
                                     </label>
-                                    <input type="password" class="form-control" id="clientPassword" required placeholder="Entrez votre mot de passe">
+                                    <input type="password" class="form-control" name="password" required placeholder="Entrez votre mot de passe">
                                 </div>
                                 
                                 <button type="submit" class="btn btn-login btn-success w-100">
@@ -212,11 +221,12 @@
                                 </button>
                             </form>
 
-                            <div class="quick-login">
-                                <h6><i class="fas fa-bolt"></i> Connexion Rapide Client :</h6>
-                                <button class="quick-btn" onclick="quickLogin('client1', 'client123', 'client')">client1 / client123</button>
-                                <button class="quick-btn" onclick="quickLogin('client2', 'client123', 'client')">client2 / client123</button>
-                                <button class="quick-btn" onclick="quickLogin('client3', 'client123', 'client')">client3 / client123</button>
+                            <!-- Bouton Créer un compte -->
+                            <div class="text-center mt-3">
+                                <p class="text-muted mb-2">Pas encore de compte ?</p>
+                                <a href="/register-client/" class="btn btn-outline-success w-100">
+                                    <i class="fas fa-user-plus me-2"></i>Créer un Compte Client
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -227,13 +237,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        function clearStoredAuth() {
-            localStorage.removeItem('authToken');
-            localStorage.removeItem('userInfo');
-            showAlert('admin', 'Données de connexion effacées', 'success');
-            showAlert('client', 'Données de connexion effacées', 'success');
-        }
-
         function switchTab(tabName) {
             // Update tab buttons
             document.querySelectorAll('.login-tab').forEach(tab => tab.classList.remove('active'));
@@ -262,10 +265,6 @@
                 document.getElementById('adminUsername').value = username;
                 document.getElementById('adminPassword').value = password;
                 document.getElementById('adminLoginForm').dispatchEvent(new Event('submit'));
-            } else {
-                document.getElementById('clientUsername').value = username;
-                document.getElementById('clientPassword').value = password;
-                document.getElementById('clientLoginForm').dispatchEvent(new Event('submit'));
             }
         }
 
@@ -274,7 +273,8 @@
                 const response = await fetch('/api/auth/login/', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
                     },
                     body: JSON.stringify({
                         username: username,
@@ -282,28 +282,18 @@
                     })
                 });
 
-                console.log('Response status:', response.status);
-                console.log('Response headers:', response.headers);
-                
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
 
                 const data = await response.json();
-                console.log('Response data:', data);
                 
                 if (data.status === 'success') {
-                    // Vérifier le rôle
+                    // Vérifier le rôle admin uniquement
                     const isAdmin = data.user.is_staff;
-                    const isClient = !data.user.is_staff;
                     
                     if (expectedRole === 'admin' && !isAdmin) {
                         showAlert('admin', 'Ce compte n\'est pas un compte administrateur.', 'error');
-                        return;
-                    }
-                    
-                    if (expectedRole === 'client' && !isClient) {
-                        showAlert('client', 'Ce compte n\'est pas un compte client.', 'error');
                         return;
                     }
                     
@@ -311,30 +301,20 @@
                     localStorage.setItem('authToken', data.token);
                     localStorage.setItem('userInfo', JSON.stringify(data.user));
                     
-                    // Redirection selon le rôle
-                    if (isAdmin) {
-                        showAlert('admin', 'Connexion réussie ! Redirection vers l\'administration...', 'success');
-                        setTimeout(() => {
-                            window.location.href = '/admin-backoffice/';
-                        }, 1500);
-                    } else {
-                        showAlert('client', 'Connexion réussie ! Redirection vers votre espace...', 'success');
-                        setTimeout(() => {
-                            window.location.href = '/client-dashboard/';
-                        }, 1500);
-                    }
+                    // Redirection vers admin
+                    showAlert('admin', 'Connexion réussie ! Redirection vers l\'administration...', 'success');
+                    setTimeout(() => {
+                        window.location.href = '/admin-backoffice/';
+                    }, 1500);
                 } else {
-                    const alertType = expectedRole === 'admin' ? 'admin' : 'client';
-                    showAlert(alertType, data.message || 'Erreur de connexion', 'error');
+                    showAlert('admin', data.message || 'Erreur de connexion', 'error');
                 }
             } catch (error) {
-                console.error('Login error:', error);
-                const alertType = expectedRole === 'admin' ? 'admin' : 'client';
-                showAlert(alertType, `Erreur de connexion au serveur: ${error.message}`, 'error');
+                showAlert('admin', `Erreur de connexion au serveur: ${error.message}`, 'error');
             }
         }
 
-        // Event listeners
+        // Event listener pour admin seulement
         document.getElementById('adminLoginForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const username = document.getElementById('adminUsername').value;
@@ -351,42 +331,6 @@
                 btn.disabled = false;
             });
         });
-
-        document.getElementById('clientLoginForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const username = document.getElementById('clientUsername').value;
-            const password = document.getElementById('clientPassword').value;
-            
-            // Afficher loading
-            const btn = this.querySelector('button[type="submit"]');
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Connexion...';
-            btn.disabled = true;
-            
-            login(username, password, 'client').finally(() => {
-                btn.innerHTML = originalText;
-                btn.disabled = false;
-            });
-        });
-
-        // Vérification automatique désactivée - l'utilisateur doit se connecter manuellement
-        // window.addEventListener('load', function() {
-        //     const token = localStorage.getItem('authToken');
-        //     const userInfo = localStorage.getItem('userInfo');
-        //     
-        //     if (token && userInfo) {
-        //         try {
-        //             const user = JSON.parse(userInfo);
-        //             if (user.is_staff) {
-        //                 window.location.href = '/admin-backoffice/';
-        //             } else {
-        //                 window.location.href = '/client-dashboard/';
-        //             }
-        //         } catch (e) {
-        //             // Ignore parsing errors
-        //         }
-        //     }
-        // });
     </script>
 </body>
 </html>

@@ -289,12 +289,12 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="#" onclick="showSection('trips')">
+                            <a class="nav-link" href="{% url 'admin_trips_list' %}">
                                 <i class="fas fa-route me-2"></i> Voyages
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="#" onclick="showSection('buses')">
+                            <a class="nav-link" href="{% url 'admin_buses_list' %}">
                                 <i class="fas fa-bus me-2"></i> Autobus
                             </a>
                         </li>
@@ -321,6 +321,13 @@
                     </ul>
                     
                     <hr class="my-4" style="border-color: rgba(255,255,255,0.2);">
+                    
+                    <!-- Bouton de test pour le debugging -->
+                    <div class="nav-item mb-2">
+                        <button class="btn btn-warning btn-sm w-100" onclick="testNavigationQuick()">
+                            <i class="fas fa-wrench me-1"></i> Test Navigation
+                        </button>
+                    </div>
                     
                     <div class="nav-item">
                         <a class="nav-link" href="#" onclick="logout()">
@@ -493,6 +500,7 @@
                                                 <th>ID</th>
                                                 <th>Route</th>
                                                 <th>Départ</th>
+                                                <th>Arrivée</th>
                                                 <th>Prix Aller (XAF)</th>
                                                 <th>Prix A/R (XAF)</th>
                                                 <th>Places</th>
@@ -503,7 +511,7 @@
                                         </thead>
                                         <tbody id="tripsTable">
                                             <tr>
-                                                <td colspan="8" class="text-center">
+                                                <td colspan="10" class="text-center">
                                                     <div class="spinner-border" role="status"></div>
                                                 </td>
                                             </tr>
@@ -841,7 +849,7 @@
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                         <i class="fas fa-times me-1"></i>Annuler
                     </button>
-                    <button type="button" class="btn btn-primary" onclick="createBus()">
+                    <button type="button" class="btn btn-primary" onclick="submitBusForm()">
                         <i class="fas fa-plus me-1"></i>Ajouter le Bus
                     </button>
                 </div>
@@ -936,6 +944,73 @@
         </div>
     </div>
 
+    <!-- Edit Driver Modal -->
+    <div class="modal fade" id="editDriverModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-user-edit me-2"></i>Modifier Chauffeur
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editDriverForm">
+                        <input type="hidden" id="editDriverId" name="driver_id">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Nom d'utilisateur</label>
+                                <input type="text" class="form-control" id="editDriverUsername" readonly>
+                                <small class="text-muted">Le nom d'utilisateur ne peut pas être modifié</small>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Email</label>
+                                <input type="email" class="form-control" id="editDriverEmail" name="email">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Prénom *</label>
+                                <input type="text" class="form-control" id="editDriverFirstName" name="first_name" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Nom *</label>
+                                <input type="text" class="form-control" id="editDriverLastName" name="last_name" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Téléphone</label>
+                                <input type="tel" class="form-control" id="editDriverPhone" name="phone">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Numéro de permis</label>
+                                <input type="text" class="form-control" id="editDriverLicense" name="license_number">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Années d'expérience</label>
+                                <input type="number" class="form-control" id="editDriverExperience" name="experience_years" min="0">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Disponibilité</label>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="editDriverAvailable" name="is_available">
+                                    <label class="form-check-label" for="editDriverAvailable">
+                                        Chauffeur disponible
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i>Annuler
+                    </button>
+                    <button type="button" class="btn btn-warning" onclick="submitEditDriverForm()">
+                        <i class="fas fa-save me-1"></i>Modifier le Chauffeur
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Create Trip Modal -->
     <div class="modal fade" id="createTripModal" tabindex="-1">
         <div class="modal-dialog modal-lg">
@@ -949,98 +1024,121 @@
                 <div class="modal-body">
                     <form id="createTripForm">
                         <div class="row">
-                            <div class="col-md-6 mb-3">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Numéro de voyage</label>
+                                <input type="text" class="form-control" id="tripNumber" name="trip_number" 
+                                       placeholder="Auto-généré si vide">
+                            </div>
+                            <div class="col-md-4 mb-3">
                                 <label class="form-label">Ville de départ *</label>
                                 <select class="form-select" name="departure_city" required>
                                     <option value="">Sélectionner la ville</option>
-                                    <option value="douala">Douala</option>
-                                    <option value="yaounde">Yaoundé</option>
-                                    <option value="bafoussam">Bafoussam</option>
-                                    <option value="bamenda">Bamenda</option>
-                                    <option value="garoua">Garoua</option>
-                                    <option value="maroua">Maroua</option>
+                                    <option value="Douala">Douala</option>
+                                    <option value="Yaoundé">Yaoundé</option>
+                                    <option value="Bafoussam">Bafoussam</option>
+                                    <option value="Bamenda">Bamenda</option>
+                                    <option value="Garoua">Garoua</option>
+                                    <option value="Maroua">Maroua</option>
                                 </select>
                             </div>
-                            <div class="col-md-6 mb-3">
+                            <div class="col-md-4 mb-3">
                                 <label class="form-label">Ville d'arrivée *</label>
                                 <select class="form-select" name="arrival_city" required>
                                     <option value="">Sélectionner la ville</option>
-                                    <option value="douala">Douala</option>
-                                    <option value="yaounde">Yaoundé</option>
-                                    <option value="bafoussam">Bafoussam</option>
-                                    <option value="bamenda">Bamenda</option>
-                                    <option value="garoua">Garoua</option>
-                                    <option value="maroua">Maroua</option>
+                                    <option value="Douala">Douala</option>
+                                    <option value="Yaoundé">Yaoundé</option>
+                                    <option value="Bafoussam">Bafoussam</option>
+                                    <option value="Bamenda">Bamenda</option>
+                                    <option value="Garoua">Garoua</option>
+                                    <option value="Maroua">Maroua</option>
                                 </select>
                             </div>
                         </div>
                         <div class="row">
-                            <div class="col-md-6 mb-3">
+                            <div class="col-md-3 mb-3">
                                 <label class="form-label">Date de départ *</label>
-                                <input type="date" class="form-control" name="departure_date" required>
+                                <input type="date" class="form-control" name="date" required>
                             </div>
-                            <div class="col-md-6 mb-3">
+                            <div class="col-md-3 mb-3">
                                 <label class="form-label">Heure de départ *</label>
                                 <input type="time" class="form-control" name="departure_time" required>
                             </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">Heure d'arrivée</label>
+                                <input type="time" class="form-control" name="arrival_time">
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">Durée estimée</label>
+                                <input type="text" class="form-control" name="duration" 
+                                       placeholder="4h00">
+                            </div>
                         </div>
                         <div class="row">
-                            <div class="col-md-6 mb-3">
+                            <div class="col-md-3 mb-3">
                                 <label class="form-label">Prix aller simple (XAF) *</label>
                                 <input type="number" class="form-control" name="price_simple" 
                                        placeholder="5000" min="1000" required>
                             </div>
-                            <div class="col-md-6 mb-3">
+                            <div class="col-md-3 mb-3">
                                 <label class="form-label">Prix aller-retour (XAF) *</label>
                                 <input type="number" class="form-control" name="price_return" 
                                        placeholder="9000" min="1000" required>
                             </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Places disponibles *</label>
-                                <input type="number" class="form-control" name="available_seats" 
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">Réduction (%)</label>
+                                <input type="number" class="form-control" name="discount_percent" 
+                                       placeholder="0" min="0" max="100" step="0.01" value="0">
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">Places maximum *</label>
+                                <input type="number" class="form-control" name="max_seats" 
                                        placeholder="50" min="1" max="70" required>
                             </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Durée estimée (heures)</label>
-                                <input type="number" class="form-control" name="duration" 
-                                       placeholder="4" min="0.5" max="24" step="0.5">
-                            </div>
                         </div>
                         <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Bus assigné *</label>
-                                <select class="form-select" name="bus" required>
-                                    <option value="">Sélectionner un bus</option>
-                                    <option value="CM-1234-AB">CM-1234-AB - Mercedes Sprinter (50 places)</option>
-                                    <option value="CM-5678-CD">CM-5678-CD - Volvo 9700 (55 places)</option>
-                                    <option value="CM-9012-EF">CM-9012-EF - Scania Touring (60 places)</option>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Type de voyage</label>
+                                <select class="form-select" name="trip_type">
+                                    <option value="one_way">Aller simple</option>
+                                    <option value="round_trip">Aller-retour</option>
+                                    <option value="recurring">Régulier</option>
                                 </select>
                             </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Chauffeur *</label>
-                                <select class="form-select" name="driver" required>
-                                    <option value="">Sélectionner un chauffeur</option>
-                                    <option value="jean_dupont">Jean Dupont</option>
-                                    <option value="marie_martin">Marie Martin</option>
-                                    <option value="paul_bernard">Paul Bernard</option>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Statut</label>
+                                <select class="form-select" name="status">
+                                    <option value="programmed">Programmé</option>
+                                    <option value="boarding">Embarquement</option>
+                                    <option value="in_transit">En cours</option>
+                                    <option value="completed">Terminé</option>
+                                    <option value="cancelled">Annulé</option>
+                                    <option value="delayed">Retardé</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Bus assigné *</label>
+                                <select class="form-select" name="bus_id" required>
+                                    <option value="">Sélectionner un bus</option>
+                                    <!-- Les options seront chargées dynamiquement -->
                                 </select>
                             </div>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Description du voyage</label>
-                            <textarea class="form-control" name="description" rows="3" 
+                            <label class="form-label">Notes</label>
+                            <textarea class="form-control" name="notes" rows="3" 
                                       placeholder="Informations additionnelles sur le voyage..."></textarea>
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        <i class="fas fa-times me-1"></i>Annuler
+                        <i class="fas fa-times me-1"></i>Fermer
                     </button>
-                    <button type="button" class="btn btn-primary" onclick="createTrip()">
-                        <i class="fas fa-plus me-1"></i>Créer le Voyage
+                    <button type="button" class="btn btn-warning" id="cancelEditBtn" onclick="cancelEdit()" style="display: none;">
+                        <i class="fas fa-undo me-1"></i>Annuler l'édition
+                    </button>
+                    <button type="button" class="btn btn-success" onclick="createTrip()">
+                        <i class="fas fa-plus me-1"></i>Créer le voyage
                     </button>
                 </div>
             </div>
@@ -1050,32 +1148,186 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // Navigation simple qui fonctionne
-        function showSection(sectionName) {
+        // FONCTION ULTRA-ROBUSTE POUR LA NAVIGATION
+        function simpleShowSection(sectionName) {
+            console.log('� Navigation vers:', sectionName);
+            
             // Masquer toutes les sections
-            const sections = document.querySelectorAll('.section-content');
-            sections.forEach(section => {
-                section.style.display = 'none';
+            var sections = ['dashboard', 'trips', 'buses', 'drivers', 'reservations', 'tickets', 'alerts'];
+            sections.forEach(function(section) {
+                var element = document.getElementById(section + '-section');
+                if (element) {
+                    element.style.display = 'none';
+                    console.log('❌ Masqué:', section + '-section');
+                } else {
+                    console.log('⚠️ Section non trouvée:', section + '-section');
+                }
             });
             
             // Afficher la section demandée
-            const targetSection = document.getElementById(sectionName + '-section');
+            var targetSection = document.getElementById(sectionName + '-section');
             if (targetSection) {
                 targetSection.style.display = 'block';
+                console.log('✅ Affiché:', sectionName + '-section');
+                
+                // Charger les données si c'est la section trips
+                if (sectionName === 'trips') {
+                    try {
+                        loadTrips();
+                        console.log('📊 Chargement des voyages...');
+                    } catch (e) {
+                        console.log('Note: loadTrips() non disponible:', e);
+                    }
+                }
+            } else {
+                console.error('❌ Section cible introuvable:', sectionName + '-section');
+                console.log('🔍 Sections disponibles:', 
+                    sections.map(s => document.getElementById(s + '-section') ? s : 'MANQUANT:' + s)
+                );
             }
             
-            // Mettre à jour la navigation active
-            const navLinks = document.querySelectorAll('.nav-link');
-            navLinks.forEach(link => {
+            // Mettre à jour les liens actifs
+            document.querySelectorAll('.nav-link').forEach(function(link) {
                 link.classList.remove('active');
             });
             
-            // Activer le lien correspondant
+            // Marquer le lien actuel comme actif
             event.target.classList.add('active');
+        }
+            
+            // Activer le lien cliqué
+            event.target.classList.add('active');
+            
+            // Charger les données si nécessaire
+            if (sectionName === 'trips') {
+                try {
+                    loadTrips();
+                } catch (e) {
+                    console.log('Note: loadTrips() non disponible');
+                }
+            }
+            
+            return false; // Empêcher le comportement par défaut du lien
+        }
+
+        // Test rapide de navigation
+        function testNavigationQuick() {
+            console.log('🧪 Test navigation rapide commencé...');
+            
+            // Test 1: Dashboard
+            setTimeout(() => {
+                console.log('Test 1: Dashboard');
+                simpleShowSection('dashboard');
+            }, 100);
+            
+            // Test 2: Voyages 
+            setTimeout(() => {
+                console.log('Test 2: Voyages');
+                simpleShowSection('trips');
+            }, 1000);
+            
+            // Test 3: Autobus
+            setTimeout(() => {
+                console.log('Test 3: Autobus');
+                simpleShowSection('buses');
+            }, 2000);
+            
+            // Test 4: Retour Dashboard
+            setTimeout(() => {
+                console.log('Test 4: Retour Dashboard');
+                simpleShowSection('dashboard');
+            }, 3000);
+            
+            alert('Test automatique des menus en cours... Regardez la console (F12)');
+        }
+
+        function showSection(sectionName) {
+            console.log('🔄 Changement de section vers:', sectionName);
+            
+            try {
+                // Masquer toutes les sections
+                const sections = document.querySelectorAll('.section-content');
+                console.log('📋 Sections trouvées:', sections.length);
+                
+                sections.forEach(section => {
+                    section.style.display = 'none';
+                });
+                
+                // Afficher la section demandée
+                const targetSection = document.getElementById(sectionName + '-section');
+                console.log('🎯 Section cible:', targetSection);
+                
+                if (targetSection) {
+                    targetSection.style.display = 'block';
+                    console.log('✅ Section affichée:', sectionName);
+                } else {
+                    console.error('❌ Section non trouvée:', sectionName + '-section');
+                }
+                
+                // Mettre à jour la navigation active
+                const navLinks = document.querySelectorAll('.nav-link');
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                });
+                
+                // Activer le lien correspondant
+                if (event && event.target) {
+                    event.target.classList.add('active');
+                }
+                
+                // Charger les données spécifiques à la section
+                if (sectionName === 'trips') {
+                    loadTrips();
+                }
+                
+            } catch (error) {
+                console.error('❌ Erreur dans showSection:', error);
+                alert('Erreur lors du changement de section: ' + error.message);
+            }
         }
 
         function showCreateDriverModal() {
             const modal = new bootstrap.Modal(document.getElementById('createDriverModal'));
             modal.show();
+        }
+        
+        function submitDriverForm() {
+            const form = document.getElementById('createDriverForm');
+            const formData = new FormData(form);
+            
+            const driverData = {
+                username: formData.get('username'),
+                first_name: formData.get('first_name'),
+                last_name: formData.get('last_name'),
+                email: formData.get('email'),
+                phone: formData.get('phone'),
+                license_number: formData.get('license_number'),
+                experience_years: formData.get('experience_years') || 0
+            };
+            
+            fetch('/api/drivers/create/', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(driverData)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.status === 'success') {
+                    alert('✅ ' + result.message);
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('createDriverModal'));
+                    modal.hide();
+                    form.reset();
+                    // Recharger la section chauffeurs si elle est active
+                    if (document.getElementById('drivers-section').style.display !== 'none') {
+                        loadDrivers();
+                    }
+                } else {
+                    alert('❌ ' + result.message);
+                }
+            })
+            .catch(error => {
+                alert('❌ Erreur: ' + error.message);
+            });
         }
 
         function showCreateBusModal() {
@@ -1085,7 +1337,48 @@
 
         function showCreateTripModal() {
             const modal = new bootstrap.Modal(document.getElementById('createTripModal'));
+            
+            // Charger les bus disponibles
+            loadBusesForForm();
+            
             modal.show();
+        }
+        
+        // Fonction pour charger les bus dans le formulaire
+        async function loadBusesForForm() {
+            try {
+                // Pour l'instant, on charge tous les bus de la BD
+                const response = await fetch('/api/buses/list/');
+                if (response.ok) {
+                    const buses = await response.json();
+                    const busSelect = document.querySelector('select[name="bus_id"]');
+                    
+                    // Vider les options existantes sauf la première
+                    busSelect.innerHTML = '<option value="">Sélectionner un bus</option>';
+                    
+                    // Ajouter les bus depuis l'API (si disponible) ou depuis une liste statique
+                    const staticBuses = [
+                        {id: 1, bus_number: 'BUS001', total_seats: 25},
+                        {id: 2, bus_number: 'BUS002', total_seats: 30},
+                        {id: 3, bus_number: 'BUS003', total_seats: 40},
+                        {id: 4, bus_number: 'BUS004', total_seats: 45},
+                        {id: 5, bus_number: 'BUS005', total_seats: 50},
+                        {id: 6, bus_number: 'BUS006', total_seats: 55}
+                    ];
+                    
+                    staticBuses.forEach(bus => {
+                        const option = document.createElement('option');
+                        option.value = bus.id;
+                        option.textContent = `${bus.bus_number} (${bus.total_seats} places)`;
+                        busSelect.appendChild(option);
+                    });
+                } else {
+                    console.log('API bus non disponible, utilisation des valeurs statiques');
+                }
+            } catch (error) {
+                console.log('Erreur chargement bus:', error);
+                // En cas d'erreur, utiliser des valeurs par défaut
+            }
         }
 
         function createDriver() {
@@ -1117,6 +1410,7 @@
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
                 },
                 body: params.toString()
             })
@@ -1166,56 +1460,28 @@
             return cookieValue;
         }
 
-        function createBus() {
-            const form = document.getElementById('createBusForm');
-            const formData = new FormData(form);
-            
-            // Convertir FormData en objet JSON
-            const data = {};
-            for (let [key, value] of formData.entries()) {
-                data[key] = value;
-            }
-            
-            // Validation côté client
-            if (!data.bus_number || !data.bus_model || !data.total_seats) {
-                alert('Veuillez remplir tous les champs requis (*)');
-                return;
-            }
-            
-            // Envoyer au backend
-            fetch('/api/buses/create/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(data)
-            })
-            .then(response => response.json())
-            .then(result => {
-                if (result.status === 'success') {
-                    alert('✅ ' + result.message);
-                    // Fermer la modal
-                    const modal = bootstrap.Modal.getInstance(document.getElementById('createBusModal'));
-                    modal.hide();
-                    // Réinitialiser le formulaire
-                    form.reset();
-                    // Optionnel: recharger la liste des bus
-                    // loadBuses();
-                } else {
-                    alert('❌ Erreur: ' + result.message);
-                }
-            })
-            .catch(error => {
-                console.error('Erreur:', error);
-                alert('❌ Erreur de connexion au serveur');
-            });
         }
+
+        // Compatibilité - redirection vers la nouvelle fonction
+        window.createBus = function() {
+            console.log('🔄 Redirection createBus() vers submitBusForm()');
+            window.submitBusForm();
+        };
+        
+        // Assurons-nous que toutes les fonctions sont disponibles
+        console.log('🚌 Fonctions bus chargées:');
+        console.log('- showCreateBusModal:', typeof window.showCreateBusModal);
+        console.log('- submitBusForm:', typeof window.submitBusForm);
+        console.log('- createBus:', typeof window.createBus);
+        console.log('- loadBuses:', typeof window.loadBuses);
 
         function createTrip() {
             const form = document.getElementById('createTripForm');
+            const submitBtn = document.querySelector('#createTripForm button[type="submit"]');
+            const isEditing = submitBtn.getAttribute('data-editing');
             
             // Validation des champs requis
-            const requiredFields = ['departure_city', 'arrival_city', 'departure_date', 'departure_time', 'price_simple', 'price_return', 'bus'];
+            const requiredFields = ['departure_city', 'arrival_city', 'date', 'departure_time', 'price_simple', 'price_return', 'max_seats', 'bus_id'];
             for (let field of requiredFields) {
                 if (!form[field].value) {
                     alert(`❌ Le champ ${field} est requis`);
@@ -1223,6 +1489,16 @@
                 }
             }
             
+            if (isEditing) {
+                // Mode édition - mettre à jour le voyage existant
+                updateTrip(isEditing, form);
+            } else {
+                // Mode création - créer un nouveau voyage
+                createNewTrip(form);
+            }
+        }
+
+        function createNewTrip(form) {
             // Préparer les données
             const formData = new FormData(form);
             const params = new URLSearchParams();
@@ -1238,6 +1514,7 @@
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
                 },
                 body: params.toString()
             })
@@ -1255,8 +1532,7 @@
                     form.reset();
                     const modal = bootstrap.Modal.getInstance(document.getElementById('createTripModal'));
                     if (modal) modal.hide();
-                    // Optionnel: recharger la liste des voyages
-                    // loadTrips();
+                    loadTrips(); // Recharger la liste
                 } else {
                     alert('❌ Erreur: ' + result.message);
                 }
@@ -1267,23 +1543,136 @@
             });
         }
 
+        async function updateTrip(tripId, form) {
+            try {
+                // Préparer les données JSON pour la mise à jour
+                const formData = new FormData(form);
+                const data = {};
+                
+                for (let [key, value] of formData.entries()) {
+                    if (value) {
+                        // Convertir les noms de champs du formulaire vers les noms de l'API
+                        switch(key) {
+                            case 'trip_number':
+                                data.trip_number = value;
+                                break;
+                            case 'departure_city':
+                                data.departure_city = value;
+                                break;
+                            case 'arrival_city':
+                                data.arrival_city = value;
+                                break;
+                            case 'departure_date':
+                                data.date = value;
+                                break;
+                            case 'departure_time':
+                                data.departure_time = value;
+                                break;
+                            case 'arrival_time':
+                                data.arrival_time = value;
+                                break;
+                            case 'duration':
+                                data.duration = value;
+                                break;
+                            case 'price_simple':
+                                data.price_simple = parseFloat(value);
+                                break;
+                            case 'price_return':
+                                data.price_return = parseFloat(value);
+                                break;
+                            case 'max_seats':
+                                data.max_seats = parseInt(value);
+                                break;
+                            case 'bus':
+                                data.bus_id = parseInt(value);
+                                break;
+                        }
+                    }
+                }
+                
+                console.log('Mise à jour voyage avec données:', data);
+                
+                const response = await fetch(`/api/trips/${tripId}/update/`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    alert('✅ Voyage mis à jour avec succès !');
+                    cancelEdit(); // Réinitialiser le formulaire
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('createTripModal'));
+                    if (modal) modal.hide();
+                    loadTrips(); // Recharger la liste
+                } else {
+                    alert('❌ Erreur: ' + result.message);
+                }
+                
+            } catch (error) {
+                console.error('Erreur:', error);
+                alert('❌ Erreur lors de la mise à jour: ' + error.message);
+            }
+        }
+
         function logout() {
-            window.location.href = '/auth/login/';
+            console.log('🚪 Déconnexion en cours...');
+            
+            try {
+                // Déconnexion et redirection vers la page principale avec choix Admin/Client
+                localStorage.clear(); // Nettoyer le stockage local
+                sessionStorage.clear(); // Nettoyer le stockage de session
+                
+                console.log('🧹 Stockage nettoyé');
+                console.log('🔄 Redirection vers la page de login...');
+                
+                // Forcer la redirection
+                window.location.replace('/');
+                
+            } catch (error) {
+                console.error('❌ Erreur lors de la déconnexion:', error);
+                // Fallback en cas d'erreur
+                window.location.href = '/';
+            }
         }
 
         // Fonction pour charger et afficher les voyages
         function loadTrips() {
+            console.log('📋 Chargement de la liste des voyages...');
+            
             fetch('/api/trips/list/')
-            .then(response => response.json())
+            .then(response => {
+                console.log('📡 Réponse loadTrips:', response.status);
+                return response.json();
+            })
             .then(result => {
+                console.log('📊 Données reçues:', result);
+                
                 if (result.status === 'success') {
                     const tbody = document.getElementById('tripsTable');
+                    if (!tbody) {
+                        console.error('❌ Table tripsTable non trouvée !');
+                        return;
+                    }
+                    
                     tbody.innerHTML = '';
                     
                     if (result.trips.length === 0) {
-                        tbody.innerHTML = '<tr><td colspan="9" class="text-center">Aucun voyage trouvé</td></tr>';
+                        tbody.innerHTML = '<tr><td colspan="10" class="text-center">Aucun voyage trouvé</td></tr>';
+                        console.log('📭 Aucun voyage à afficher');
                         return;
                     }
+                    
+                    console.log(`📋 Affichage de ${result.trips.length} voyages`);
                     
                     result.trips.forEach(trip => {
                         const row = `
@@ -1291,11 +1680,12 @@
                                 <td>${trip.trip_number}</td>
                                 <td>${trip.route}</td>
                                 <td>${trip.date} ${trip.departure_time}</td>
+                                <td>${trip.arrival_time || 'N/A'}</td>
                                 <td>${trip.price_simple}</td>
                                 <td>${trip.price_return}</td>
                                 <td>${trip.available_seats}</td>
                                 <td>${trip.bus_number}</td>
-                                <td><span class="badge bg-primary">${trip.status}</span></td>
+                                <td><span class="badge bg-primary">${trip.status || 'N/A'}</span></td>
                                 <td>
                                     <button class="btn btn-sm btn-outline-primary" onclick="editTrip(${trip.id})">
                                         <i class="fas fa-edit"></i>
@@ -1308,14 +1698,19 @@
                         `;
                         tbody.innerHTML += row;
                     });
+                    
+                    console.log('✅ Liste des voyages mise à jour');
                 } else {
-                    console.error('Erreur lors du chargement des voyages:', result.message);
+                    console.error('❌ Erreur lors du chargement des voyages:', result.message);
                 }
             })
             .catch(error => {
+                console.error('❌ Erreur fetch loadTrips:', error);
+            });
+        }
                 console.error('Erreur:', error);
                 const tbody = document.getElementById('tripsTable');
-                tbody.innerHTML = '<tr><td colspan="9" class="text-center text-danger">Erreur de chargement</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="10" class="text-center text-danger">Erreur de chargement</td></tr>';
             });
         }
 
@@ -1348,22 +1743,838 @@
             }
         }
 
-        // Fonctions placeholder pour edit et delete
-        function editTrip(id) {
-            alert('Édition du voyage ID: ' + id);
-        }
-
-        function deleteTrip(id) {
-            if (confirm('Êtes-vous sûr de vouloir supprimer ce voyage ?')) {
-                alert('Suppression du voyage ID: ' + id);
+        // Fonctions pour edit et delete
+        async function editTrip(id) {
+            try {
+                console.log('Édition du voyage ID:', id);
+                
+                // Récupérer les détails du voyage
+                const response = await fetch(`/api/trips/${id}/`, {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Erreur lors de la récupération du voyage');
+                }
+                
+                const data = await response.json();
+                const trip = data.trip;
+                
+                console.log('Données du voyage:', trip);
+                
+                // Pré-remplir le formulaire de création avec les données existantes
+                document.getElementById('tripNumber').value = trip.trip_number || '';
+                
+                // Pour les select, nous devons définir les valeurs correctement
+                const departureCitySelect = document.querySelector('select[name="departure_city"]');
+                departureCitySelect.value = trip.departure_city;
+                
+                const arrivalCitySelect = document.querySelector('select[name="arrival_city"]');
+                arrivalCitySelect.value = trip.arrival_city;
+                
+                document.querySelector('input[name="date"]').value = trip.date || '';
+                document.querySelector('input[name="departure_time"]').value = trip.departure_time || '';
+                document.querySelector('input[name="arrival_time"]').value = trip.arrival_time || '';
+                document.querySelector('input[name="duration"]').value = trip.duration || '';
+                document.querySelector('input[name="price_simple"]').value = trip.price_simple || '';
+                document.querySelector('input[name="price_return"]').value = trip.price_return || '';
+                document.querySelector('input[name="discount_percent"]').value = trip.discount_percent || '0';
+                document.querySelector('input[name="max_seats"]').value = trip.max_seats || '';
+                
+                // Sélectionner le type de voyage
+                const tripTypeSelect = document.querySelector('select[name="trip_type"]');
+                tripTypeSelect.value = trip.trip_type || 'one_way';
+                
+                // Sélectionner le statut
+                const statusSelect = document.querySelector('select[name="status"]');
+                statusSelect.value = trip.status || 'programmed';
+                
+                // Sélectionner le bus (si disponible)
+                const busSelect = document.querySelector('select[name="bus_id"]');
+                if (trip.bus && trip.bus.id) {
+                    busSelect.value = trip.bus.id;
+                }
+                
+                // Notes
+                document.querySelector('textarea[name="notes"]').value = trip.notes || '';
+                
+                // Changer le bouton pour "Mettre à jour"
+                const submitBtn = document.querySelector('#createTripForm + .modal-footer button[onclick="createTrip()"]');
+                submitBtn.textContent = 'Mettre à jour le voyage';
+                submitBtn.className = 'btn btn-warning';
+                submitBtn.innerHTML = '<i class="fas fa-edit me-1"></i>Mettre à jour le voyage';
+                
+                // Afficher le bouton d'annulation
+                const cancelBtn = document.getElementById('cancelEditBtn');
+                cancelBtn.style.display = 'inline-block';
+                
+                // Ajouter un attribut data pour indiquer qu'on édite
+                submitBtn.setAttribute('data-editing', id);
+                
+                // Ouvrir le modal
+                const modal = new bootstrap.Modal(document.getElementById('createTripModal'));
+                modal.show();
+                
+            } catch (error) {
+                console.error('Erreur:', error);
+                alert('❌ Erreur lors du chargement du voyage: ' + error.message);
             }
         }
 
+        async function deleteTrip(id) {
+            console.log('🗑️ Tentative de suppression du voyage ID:', id);
+            
+            if (confirm('Êtes-vous sûr de vouloir supprimer ce voyage ?')) {
+                try {
+                    console.log('✅ Confirmation reçue, envoi de la requête...');
+                    
+                    const response = await fetch(`/api/trips/${id}/delete/`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                        }
+                    });
+                    
+                    console.log('📡 Réponse reçue, status:', response.status);
+                    console.log('📡 Headers:', Object.fromEntries(response.headers.entries()));
+                    
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        console.error('❌ Erreur HTTP:', errorText);
+                        throw new Error(`Erreur ${response.status}: ${errorText}`);
+                    }
+                    
+                    const result = await response.json();
+                    console.log('✅ Résultat de suppression:', result);
+                    
+                    if (result.status === 'success') {
+                        alert('✅ ' + result.message);
+                        console.log('🔄 Rechargement de la liste des voyages...');
+                        loadTrips();
+                    } else {
+                        throw new Error(result.message || 'Erreur inconnue');
+                    }
+                    
+                } catch (error) {
+                    console.error('❌ Erreur lors de la suppression:', error);
+                    alert('❌ Erreur lors de la suppression du voyage: ' + error.message);
+                }
+            } else {
+                console.log('❌ Suppression annulée par l\'utilisateur');
+            }
+        }
+
+        // Fonction pour annuler l'édition
+        function cancelEdit() {
+            const submitBtn = document.querySelector('#createTripForm + .modal-footer button[onclick="createTrip()"]');
+            submitBtn.innerHTML = '<i class="fas fa-plus me-1"></i>Créer le voyage';
+            submitBtn.className = 'btn btn-success';
+            submitBtn.removeAttribute('data-editing');
+            
+            // Masquer le bouton d'annulation
+            const cancelBtn = document.getElementById('cancelEditBtn');
+            cancelBtn.style.display = 'none';
+            
+            // Réinitialiser le formulaire
+            document.getElementById('createTripForm').reset();
+        }
+
         // Charger les voyages au chargement de la page
+        // Fonction de test pour diagnostiquer les problèmes
+        function testNavigation() {
+            console.log('🧪 Test de navigation...');
+            const sections = document.querySelectorAll('.section-content');
+            console.log('📋 Sections disponibles:');
+            sections.forEach(section => {
+                console.log(`   - ${section.id}: ${section.style.display}`);
+            });
+            
+            const navLinks = document.querySelectorAll('.nav-link');
+            console.log('🔗 Liens de navigation:', navLinks.length);
+            
+            showSection('trips');
+        }
+
+        // Améliorer l'initialisation
         document.addEventListener('DOMContentLoaded', function() {
-            loadTrips();
+            console.log('🚀 Initialisation de l\'interface admin...');
+            
+            // Tester les éléments essentiels
+            const sections = document.querySelectorAll('.section-content');
+            const navLinks = document.querySelectorAll('.nav-link');
+            
+            console.log(`📋 ${sections.length} sections trouvées`);
+            console.log(`🔗 ${navLinks.length} liens de navigation trouvés`);
+            
+            // Charger les voyages par défaut
+            try {
+                loadTrips();
+                console.log('✅ Chargement initial des voyages lancé');
+            } catch (error) {
+                console.error('❌ Erreur lors du chargement initial:', error);
+            }
+            
+            // Ajouter testNavigation à window pour le debugging
+            window.testNavigation = testNavigation;
+            window.showSection = showSection;
+            
+            console.log('✅ Initialisation terminée. Tapez testNavigation() dans la console pour tester.');
         });
     </script>
-    <script src="{% static 'admin-backoffice.js' %}"></script>
+    
+    <!-- SCRIPT DE NAVIGATION ULTRA-SIMPLE -->
+    <script>
+        console.log('🔧 Navigation simple chargée');
+        
+        // Fonction de navigation très simple
+        function showSection(sectionName) {
+            console.log('Navigation vers:', sectionName);
+            
+            // Masquer toutes les sections
+            var allSections = document.querySelectorAll('.section-content');
+            for (var i = 0; i < allSections.length; i++) {
+                allSections[i].style.display = 'none';
+            }
+            
+            // Afficher la section demandée
+            var targetSection = document.getElementById(sectionName + '-section');
+            if (targetSection) {
+                targetSection.style.display = 'block';
+                console.log('Section affichée:', sectionName);
+                
+                // Charger automatiquement les données selon la section
+                if (sectionName === 'trips') {
+                    console.log('🚌 Chargement automatique des voyages...');
+                    loadTrips();
+                } else if (sectionName === 'buses') {
+                    console.log('🚌 Chargement automatique des bus...');
+                    loadBuses();
+                } else if (sectionName === 'drivers') {
+                    console.log('👨‍💼 Chargement automatique des chauffeurs...');
+                    loadDrivers();
+                }
+            } else {
+                alert('Section introuvable: ' + sectionName);
+            }
+            
+            // Mettre à jour les liens actifs
+            var navLinks = document.querySelectorAll('.nav-link');
+            for (var i = 0; i < navLinks.length; i++) {
+                navLinks[i].classList.remove('active');
+            }
+            
+            // Ajouter la classe active au lien correspondant
+            var activeLink = document.querySelector(`[onclick="showSection('${sectionName}')"]`);
+            if (activeLink) {
+                activeLink.classList.add('active');
+            }
+            
+            return false;
+        }
+        
+        // Pour assurer la compatibilité
+        window.showSection = showSection;
+        window.simpleShowSection = showSection;
+        
+        // Fonction simple pour créer un bus
+        function showCreateBusModal() {
+            console.log('Ouverture modal bus');
+            try {
+                var modal = new bootstrap.Modal(document.getElementById('createBusModal'));
+                modal.show();
+            } catch(e) {
+                alert('Erreur ouverture modal: ' + e.message);
+            }
+        }
+        
+        function submitBusForm() {
+            console.log('Création bus');
+            try {
+                var form = document.getElementById('createBusForm');
+                var formData = new FormData(form);
+                
+                var data = {
+                    bus_number: formData.get('bus_number'),
+                    bus_model: formData.get('bus_model'),
+                    total_seats: formData.get('total_seats'),
+                    year: formData.get('year'),
+                    status: formData.get('status'),
+                    mileage: formData.get('mileage'),
+                    notes: formData.get('notes') || ''
+                };
+                
+                if (!data.bus_number || !data.bus_model || !data.total_seats) {
+                    alert('Veuillez remplir tous les champs requis');
+                    return;
+                }
+                
+                fetch('/api/buses/create/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.status === 'success') {
+                        alert('✅ Bus créé: ' + result.bus_number);
+                        var modal = bootstrap.Modal.getInstance(document.getElementById('createBusModal'));
+                        if (modal) modal.hide();
+                        form.reset();
+                    } else {
+                        alert('❌ Erreur: ' + result.message);
+                    }
+                })
+                .catch(error => {
+                    alert('❌ Erreur connexion: ' + error.message);
+                });
+            } catch(e) {
+                alert('❌ Erreur: ' + e.message);
+            }
+        }
+        
+        // Fonction simple pour créer un voyage
+        function showCreateTripModal() {
+            console.log('Ouverture modal voyage');
+            try {
+                var modal = new bootstrap.Modal(document.getElementById('createTripModal'));
+                modal.show();
+                // Charger les bus disponibles
+                loadBusesForTrip();
+            } catch(e) {
+                alert('Erreur ouverture modal: ' + e.message);
+            }
+        }
+        
+        function loadBusesForTrip() {
+            // Charger la liste des bus pour le formulaire de voyage
+            fetch('/api/buses/list/')
+                .then(response => response.json())
+                .then(result => {
+                    if (result.status === 'success') {
+                        var select = document.querySelector('#createTripForm select[name="bus_id"]');
+                        if (select) {
+                            select.innerHTML = '<option value="">Sélectionner un bus</option>';
+                            result.buses.forEach(function(bus) {
+                                var option = document.createElement('option');
+                                option.value = bus.id;
+                                option.textContent = bus.bus_number + ' - ' + bus.bus_model + ' (' + bus.total_seats + ' places)';
+                                select.appendChild(option);
+                            });
+                        }
+                    }
+                })
+                .catch(error => console.log('Erreur chargement bus:', error));
+        }
+        
+        function submitTripForm() {
+            console.log('Création voyage');
+            try {
+                var form = document.getElementById('createTripForm');
+                var formData = new FormData(form);
+                
+                var data = {
+                    departure_city: formData.get('departure_city'),
+                    arrival_city: formData.get('arrival_city'),
+                    date: formData.get('date'),
+                    departure_time: formData.get('departure_time'),
+                    arrival_time: formData.get('arrival_time'),
+                    price_simple: formData.get('price_simple'),
+                    price_return: formData.get('price_return'),
+                    bus_id: formData.get('bus_id'),
+                    trip_type: formData.get('trip_type') || 'one_way',
+                    duration: formData.get('duration') || '',
+                    notes: formData.get('notes') || ''
+                };
+                
+                if (!data.departure_city || !data.arrival_city || !data.date || !data.departure_time || !data.price_simple || !data.price_return || !data.bus_id) {
+                    alert('Veuillez remplir tous les champs obligatoires');
+                    return;
+                }
+                
+                fetch('/api/trips/create/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.status === 'success') {
+                        alert('✅ Voyage créé: ' + result.trip_number);
+                        var modal = bootstrap.Modal.getInstance(document.getElementById('createTripModal'));
+                        if (modal) modal.hide();
+                        form.reset();
+                    } else {
+                        alert('❌ Erreur: ' + result.message);
+                    }
+                })
+                .catch(error => {
+                    alert('❌ Erreur connexion: ' + error.message);
+                });
+            } catch(e) {
+                alert('❌ Erreur: ' + e.message);
+            }
+        }
+        
+        // Rendre les fonctions globales
+        window.showCreateBusModal = showCreateBusModal;
+        window.submitBusForm = submitBusForm;
+        window.createBus = submitBusForm; // Compatibilité
+        
+        // Fonctions pour les voyages
+        window.showCreateTripModal = showCreateTripModal;
+        window.submitTripForm = submitTripForm;
+        window.createTrip = submitTripForm; // Compatibilité
+        window.loadBusesForTrip = loadBusesForTrip;
+        window.loadTrips = loadTrips;
+        window.editTrip = editTrip;
+        window.deleteTrip = deleteTrip;
+        window.showEditTripModal = showEditTripModal;
+        window.submitEditTripForm = submitEditTripForm;
+        
+        // Fonctions d'affichage et de gestion
+        function loadTrips() {
+            console.log('Chargement des voyages...');
+            fetch('/api/trips/list/')
+                .then(response => response.json())
+                .then(result => {
+                    if (result.status === 'success') {
+                        displayTrips(result.trips);
+                    } else {
+                        console.error('Erreur chargement voyages:', result.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur:', error);
+                });
+        }
+        
+        function loadBuses() {
+            console.log('Chargement des bus...');
+            fetch('/api/buses/list/')
+                .then(response => response.json())
+                .then(result => {
+                    if (result.status === 'success') {
+                        displayBuses(result.buses);
+                    } else {
+                        console.error('Erreur chargement bus:', result.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur:', error);
+                });
+        }
+        
+        function displayTrips(trips) {
+            var section = document.getElementById('trips-section');
+            if (!section) return;
+            
+            var tableHtml = `
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2>Gestion des Voyages</h2>
+                    <button class="btn btn-primary" onclick="showCreateTripModal()">
+                        <i class="fas fa-plus"></i> Nouveau Voyage
+                    </button>
+                </div>
+                <div class="elegant-card">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Numéro</th>
+                                        <th>Trajet</th>
+                                        <th>Date</th>
+                                        <th>Heure</th>
+                                        <th>Prix Aller</th>
+                                        <th>Bus</th>
+                                        <th>Statut</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+            `;
+            
+            trips.forEach(function(trip) {
+                tableHtml += `
+                    <tr>
+                        <td><strong>${trip.trip_number}</strong></td>
+                        <td>${trip.departure_city} → ${trip.arrival_city}</td>
+                        <td>${trip.date}</td>
+                        <td>${trip.departure_time}</td>
+                        <td>${trip.price_simple} FCFA</td>
+                        <td>${trip.bus ? trip.bus.bus_number : 'Non assigné'}</td>
+                        <td><span class="badge bg-success">${trip.status}</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-warning" onclick="editTrip(${trip.id})" title="Modifier">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-danger ms-1" onclick="deleteTrip(${trip.id})" title="Supprimer">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            tableHtml += `
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            section.innerHTML = tableHtml;
+        }
+        
+        function displayBuses(buses) {
+            var section = document.getElementById('buses-section');
+            if (!section) return;
+            
+            var tableHtml = `
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2>Gestion des Autobus</h2>
+                    <button class="btn btn-primary" onclick="showCreateBusModal()">
+                        <i class="fas fa-plus"></i> Nouveau Bus
+                    </button>
+                </div>
+                <div class="elegant-card">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Numéro</th>
+                                        <th>Modèle</th>
+                                        <th>Places</th>
+                                        <th>Année</th>
+                                        <th>Statut</th>
+                                        <th>Chauffeur</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+            `;
+            
+            buses.forEach(function(bus) {
+                tableHtml += `
+                    <tr>
+                        <td><strong>${bus.bus_number}</strong></td>
+                        <td>${bus.bus_model}</td>
+                        <td>${bus.total_seats}</td>
+                        <td>${bus.year || 'N/A'}</td>
+                        <td><span class="badge bg-success">${bus.status}</span></td>
+                        <td>${bus.assigned_driver ? bus.assigned_driver.name : 'Non assigné'}</td>
+                        <td>
+                            <button class="btn btn-sm btn-warning" onclick="editBus(${bus.id})" title="Modifier">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-danger ms-1" onclick="deleteBus(${bus.id})" title="Supprimer">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            tableHtml += `
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            section.innerHTML = tableHtml;
+        }
+        
+        function editTrip(tripId) {
+            alert('Modification voyage ID: ' + tripId + ' (à implémenter)');
+        }
+        
+        function deleteTrip(tripId) {
+            if (confirm('Êtes-vous sûr de vouloir supprimer ce voyage ?')) {
+                fetch('/api/trips/' + tripId + '/delete/', {
+                    method: 'DELETE'
+                })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.status === 'success') {
+                        alert('✅ Voyage supprimé avec succès');
+                        loadTrips();
+                    } else {
+                        alert('❌ Erreur: ' + result.message);
+                    }
+                })
+                .catch(error => {
+                    alert('❌ Erreur: ' + error.message);
+                });
+            }
+        }
+        
+        function editBus(busId) {
+            alert('Modification bus ID: ' + busId + ' (à implémenter)');
+        }
+        
+        function deleteBus(busId) {
+            if (confirm('Êtes-vous sûr de vouloir supprimer ce bus ?')) {
+                alert('Suppression bus ' + busId + ' (API à implémenter)');
+            }
+        }
+        
+        // Fonctions pour les chauffeurs (SIMPLES - sans JavaScript complexe)
+        function loadDrivers() {
+            console.log('Chargement des chauffeurs...');
+            fetch('/api/drivers/list/')
+                .then(response => response.json())
+                .then(result => {
+                    if (result.status === 'success') {
+                        displayDrivers(result.drivers);
+                    } else {
+                        alert('Erreur chargement chauffeurs: ' + result.message);
+                    }
+                })
+                .catch(error => {
+                    alert('Erreur: ' + error.message);
+                });
+        }
+        
+        function displayDrivers(drivers) {
+            var section = document.getElementById('drivers-section');
+            if (!section) return;
+            
+            var tableHtml = `
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2>Gestion des Chauffeurs</h2>
+                    <button class="btn btn-success" onclick="showCreateDriverModal()">
+                        <i class="fas fa-plus"></i> Nouveau Chauffeur
+                    </button>
+                </div>
+                <div class="elegant-card">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Nom</th>
+                                        <th>Username</th>
+                                        <th>Email</th>
+                                        <th>Téléphone</th>
+                                        <th>Permis</th>
+                                        <th>Expérience</th>
+                                        <th>Note ⭐</th>
+                                        <th>Disponible</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+            `;
+            
+            drivers.forEach(function(driver) {
+                tableHtml += `
+                    <tr>
+                        <td><strong>${driver.first_name} ${driver.last_name}</strong></td>
+                        <td>${driver.username}</td>
+                        <td>${driver.email}</td>
+                        <td>${driver.phone || 'N/A'}</td>
+                        <td>${driver.license_number || 'N/A'}</td>
+                        <td>${driver.experience_years} ans</td>
+                        <td>
+                            <span class="badge bg-warning text-dark">
+                                ${driver.rating.toFixed(1)} ⭐
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge bg-${driver.is_available ? 'success' : 'secondary'}">
+                                ${driver.is_available ? 'Disponible' : 'Indisponible'}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-info" onclick="rateDriver(${driver.id})" title="Noter">
+                                <i class="fas fa-star"></i>
+                            </button>
+                            <button class="btn btn-sm btn-warning" onclick="editDriver(${driver.id})" title="Modifier">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-danger ms-1" onclick="deleteDriver(${driver.id})" title="Supprimer">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            tableHtml += `
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            section.innerHTML = tableHtml;
+        }
+        
+        function showCreateDriverModal() {
+            document.getElementById('createDriverModal').style.display = 'block';
+        }
+        
+        function submitDriverForm() {
+            var formData = {
+                username: document.getElementById('driverUsername').value,
+                first_name: document.getElementById('driverFirstName').value,
+                last_name: document.getElementById('driverLastName').value,
+                email: document.getElementById('driverEmail').value,
+                phone: document.getElementById('driverPhone').value,
+                license_number: document.getElementById('driverLicense').value,
+                experience_years: document.getElementById('driverExperience').value
+            };
+            
+            fetch('/api/drivers/create/', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(formData)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.status === 'success') {
+                    alert('✅ ' + result.message);
+                    document.getElementById('createDriverModal').style.display = 'none';
+                    document.getElementById('driverForm').reset();
+                    loadDrivers();
+                } else {
+                    alert('❌ ' + result.message);
+                }
+            })
+            .catch(error => {
+                alert('❌ Erreur: ' + error.message);
+            });
+        }
+        
+        function editDriver(driverId) {
+            // Récupérer les données du chauffeur
+            fetch('/api/drivers/list/')
+                .then(response => response.json())
+                .then(result => {
+                    if (result.status === 'success') {
+                        const driver = result.drivers.find(d => d.id === driverId);
+                        if (driver) {
+                            showEditDriverModal(driver);
+                        } else {
+                            alert('Chauffeur non trouvé');
+                        }
+                    } else {
+                        alert('Erreur lors du chargement des données');
+                    }
+                })
+                .catch(error => {
+                    alert('Erreur: ' + error.message);
+                });
+        }
+        
+        function showEditDriverModal(driver) {
+            // Remplir le formulaire d'édition avec les données existantes
+            document.getElementById('editDriverId').value = driver.id;
+            document.getElementById('editDriverUsername').value = driver.username;
+            document.getElementById('editDriverFirstName').value = driver.first_name;
+            document.getElementById('editDriverLastName').value = driver.last_name;
+            document.getElementById('editDriverEmail').value = driver.email;
+            document.getElementById('editDriverPhone').value = driver.phone || '';
+            document.getElementById('editDriverLicense').value = driver.license_number || '';
+            document.getElementById('editDriverExperience').value = driver.experience_years;
+            document.getElementById('editDriverAvailable').checked = driver.is_available;
+            
+            const modal = new bootstrap.Modal(document.getElementById('editDriverModal'));
+            modal.show();
+        }
+        
+        function submitEditDriverForm() {
+            const driverId = document.getElementById('editDriverId').value;
+            const driverData = {
+                first_name: document.getElementById('editDriverFirstName').value,
+                last_name: document.getElementById('editDriverLastName').value,
+                email: document.getElementById('editDriverEmail').value,
+                phone: document.getElementById('editDriverPhone').value,
+                license_number: document.getElementById('editDriverLicense').value,
+                experience_years: parseInt(document.getElementById('editDriverExperience').value),
+                is_available: document.getElementById('editDriverAvailable').checked
+            };
+            
+            fetch('/api/drivers/' + driverId + '/update/', {
+                method: 'PUT',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(driverData)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.status === 'success') {
+                    alert('✅ ' + result.message);
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('editDriverModal'));
+                    modal.hide();
+                    loadDrivers(); // Recharger la liste
+                } else {
+                    alert('❌ ' + result.message);
+                }
+            })
+            .catch(error => {
+                alert('❌ Erreur: ' + error.message);
+            });
+        }
+        
+        function rateDriver(driverId) {
+            const rating = prompt('Donnez une note de 1 à 5 étoiles:', '5');
+            if (rating && rating >= 1 && rating <= 5) {
+                const driverData = {
+                    new_rating: parseFloat(rating)
+                };
+                
+                fetch('/api/drivers/' + driverId + '/rate/', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(driverData)
+                })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.status === 'success') {
+                        alert('✅ Note ajoutée avec succès!');
+                        loadDrivers(); // Recharger pour voir la nouvelle note
+                    } else {
+                        alert('❌ ' + result.message);
+                    }
+                })
+                .catch(error => {
+                    alert('❌ Erreur: ' + error.message);
+                });
+            }
+        }
+        
+        function deleteDriver(driverId) {
+            if (confirm('Êtes-vous sûr de vouloir supprimer ce chauffeur ?')) {
+                fetch('/api/drivers/' + driverId + '/delete/', {
+                    method: 'DELETE'
+                })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.status === 'success') {
+                        alert('✅ ' + result.message);
+                        loadDrivers();
+                    } else {
+                        alert('❌ ' + result.message);
+                    }
+                })
+                .catch(error => {
+                    alert('❌ Erreur: ' + error.message);
+                });
+            }
+        }
+        
+        console.log('✅ Toutes les fonctions chargées');
+    </script>
+
+    <!-- JavaScript externe désactivé - tout le JS nécessaire est inclus ci-dessus -->
+    <!-- <script src="{% static 'admin-backoffice.js' %}"></script> -->
 </body>
 </html>

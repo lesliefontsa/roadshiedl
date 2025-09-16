@@ -1,0 +1,73 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}{{ page_title }} - RoadShield{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-edit text-warning"></i> {{ page_title }}</h2>
+    <a href="{% url 'admin_buses_list' %}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Retour à la liste
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="bus_number" class="form-label">Numéro du Bus *</label>
+                    <input type="text" class="form-control" id="bus_number" name="bus_number" 
+                           value="{{ bus.bus_number }}" required>
+                </div>
+                
+                <div class="col-md-6 mb-3">
+                    <label for="bus_model" class="form-label">Modèle *</label>
+                    <input type="text" class="form-control" id="bus_model" name="bus_model" 
+                           value="{{ bus.bus_model }}" required>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="total_seats" class="form-label">Nombre de Places *</label>
+                    <input type="number" class="form-control" id="total_seats" name="total_seats" 
+                           value="{{ bus.total_seats }}" required min="1" max="100">
+                </div>
+                
+                <div class="col-md-6 mb-3">
+                    <label for="year" class="form-label">Année</label>
+                    <input type="number" class="form-control" id="year" name="year" 
+                           value="{{ bus.year }}" min="1990" max="2030">
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="status" class="form-label">Statut</label>
+                <select class="form-select" id="status" name="status">
+                    <option value="disponible" {% if bus.status == 'disponible' %}selected{% endif %}>Disponible</option>
+                    <option value="en_route" {% if bus.status == 'en_route' %}selected{% endif %}>En Route</option>
+                    <option value="maintenance" {% if bus.status == 'maintenance' %}selected{% endif %}>En Maintenance</option>
+                    <option value="hors_service" {% if bus.status == 'hors_service' %}selected{% endif %}>Hors Service</option>
+                    <option value="en_panne" {% if bus.status == 'en_panne' %}selected{% endif %}>En Panne</option>
+                </select>
+            </div>
+
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i>
+                <strong>Bus sélectionné :</strong> {{ bus.bus_number }} - {{ bus.bus_model }}
+            </div>
+
+            <div class="d-flex justify-content-between">
+                <a href="{% url 'admin_buses_list' %}" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Annuler
+                </a>
+                <button type="submit" class="btn btn-warning">
+                    <i class="fas fa-save"></i> Modifier le Bus
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

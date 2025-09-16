@@ -365,10 +365,11 @@
 
             async loadAvailableTrips() {
                 try {
-                    const response = await fetch(`${this.apiBaseUrl}/trips/`);
+                    const response = await fetch(`${this.apiBaseUrl}/trips/list/`);
                     if (!response.ok) throw new Error('Erreur API: ' + response.status);
-                    const trips = await response.json();
-                    // Expecting an array of trip objects from the DB
+                    const data = await response.json();
+                    // Our API returns {status: "success", trips: [...]}
+                    const trips = data.trips || data; // Handle both formats
                     this.displayTrips(trips);
                 } catch (error) {
                     console.error('Erreur chargement voyages:', error);

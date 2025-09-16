@@ -1,0 +1,99 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}{{ page_title }} - RoadShield{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-route text-success"></i> {{ page_title }}</h2>
+    <a href="{% url 'admin_trips_list' %}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Retour à la liste
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-md-10 mx-auto">
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="trip_number" class="form-label">Numéro du Voyage *</label>
+                    <input type="text" class="form-control" id="trip_number" name="trip_number" required 
+                           placeholder="Ex: VOY-001">
+                </div>
+                
+                <div class="col-md-6 mb-3">
+                    <label for="bus_id" class="form-label">Bus Assigné</label>
+                    <select class="form-select" id="bus_id" name="bus_id">
+                        <option value="">Aucun bus assigné</option>
+                        {% for bus in buses %}
+                            <option value="{{ bus.id }}">{{ bus.bus_number }} - {{ bus.bus_model }} ({{ bus.total_seats }} places)</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="departure_city" class="form-label">Ville de Départ *</label>
+                    <input type="text" class="form-control" id="departure_city" name="departure_city" required 
+                           placeholder="Ex: Yaoundé">
+                </div>
+                
+                <div class="col-md-6 mb-3">
+                    <label for="arrival_city" class="form-label">Ville d'Arrivée *</label>
+                    <input type="text" class="form-control" id="arrival_city" name="arrival_city" required 
+                           placeholder="Ex: Douala">
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="departure_date" class="form-label">Date de Départ *</label>
+                    <input type="date" class="form-control" id="departure_date" name="departure_date" required>
+                </div>
+                
+                <div class="col-md-6 mb-3">
+                    <label for="departure_time" class="form-label">Heure de Départ *</label>
+                    <input type="time" class="form-control" id="departure_time" name="departure_time" required>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="price_simple" class="form-label">Prix Aller Simple (FCFA) *</label>
+                    <input type="number" class="form-control" id="price_simple" name="price_simple" required 
+                           min="0" step="100" placeholder="Ex: 5000">
+                </div>
+                
+                <div class="col-md-6 mb-3">
+                    <label for="price_round_trip" class="form-label">Prix Aller-Retour (FCFA)</label>
+                    <input type="number" class="form-control" id="price_round_trip" name="price_round_trip" 
+                           min="0" step="100" placeholder="Ex: 9000">
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="status" class="form-label">Statut</label>
+                <select class="form-select" id="status" name="status">
+                    <option value="programmed" selected>Programmé</option>
+                    <option value="boarding">Embarquement</option>
+                    <option value="in_transit">En cours</option>
+                    <option value="completed">Terminé</option>
+                    <option value="cancelled">Annulé</option>
+                    <option value="delayed">Retardé</option>
+                </select>
+            </div>
+
+            <div class="d-flex justify-content-between">
+                <a href="{% url 'admin_trips_list' %}" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Annuler
+                </a>
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-save"></i> Créer le Voyage
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

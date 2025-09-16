@@ -27,7 +27,8 @@ INSTALLED_APPS = [
     'vehicles',
     'alerts',  # Réactivé pour les alertes
     'api',
-    # 'accounts',  # Désactivé pour éviter conflit avec CustomUser
+    # 'bookings',  # Désactivé temporairement pour éviter conflits
+    # 'accounts',  # Désactivé pour éviter complications
 ]
 
 MIDDLEWARE = [

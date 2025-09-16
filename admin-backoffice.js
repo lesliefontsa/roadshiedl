@@ -1,7 +1,7 @@
 // Admin Backoffice JavaScript SIMPLIFIÉ
 class AdminBackoffice {
     constructor() {
-        this.apiBaseUrl = 'http://localhost:8009';
+        this.apiBaseUrl = 'http://localhost:8002';
         this.token = localStorage.getItem('authToken');
         this.user = JSON.parse(localStorage.getItem('userInfo') || 'null');
         this.currentSection = 'dashboard';
@@ -501,11 +501,15 @@ class AdminBackoffice {
         }
 
         try {
-            const response = await fetch(`${this.apiBaseUrl}/admin/trips/${tripId}/`, {
-                method: 'DELETE'
+            const response = await fetch(`${this.apiBaseUrl}/api/trips/${tripId}/delete/`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
             });
 
             if (response.ok) {
+                const result = await response.json();
                 this.showAlert('Voyage supprimé avec succès!', 'success');
                 this.loadTrips();
             } else {

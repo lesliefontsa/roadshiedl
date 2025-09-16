@@ -1,0 +1,110 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}Dashboard Admin - RoadShield{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1><i class="fas fa-tachometer-alt text-primary"></i> Dashboard RoadShield</h1>
+        <p class="text-muted">Interface d'administration simplifiée</p>
+    </div>
+</div>
+
+<!-- Statistiques -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body text-center">
+                <i class="fas fa-bus fa-2x mb-2"></i>
+                <h3>{{ total_buses }}</h3>
+                <p class="mb-0">Autobus</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card bg-success text-white">
+            <div class="card-body text-center">
+                <i class="fas fa-route fa-2x mb-2"></i>
+                <h3>{{ total_trips }}</h3>
+                <p class="mb-0">Voyages</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card bg-info text-white">
+            <div class="card-body text-center">
+                <i class="fas fa-users fa-2x mb-2"></i>
+                <h3>{{ total_users }}</h3>
+                <p class="mb-0">Utilisateurs</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body text-center">
+                <i class="fas fa-ticket-alt fa-2x mb-2"></i>
+                <h3>{{ total_bookings }}</h3>
+                <p class="mb-0">Réservations</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Actions rapides -->
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-bus text-primary"></i> Gestion des Autobus</h5>
+            </div>
+            <div class="card-body">
+                <p>Gérez votre flotte d'autobus sans JavaScript complexe.</p>
+                <div class="d-grid gap-2">
+                    <a href="{% url 'admin_buses_list' %}" class="btn btn-primary">
+                        <i class="fas fa-list"></i> Voir tous les bus
+                    </a>
+                    <a href="{% url 'admin_bus_create' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-plus"></i> Créer un nouveau bus
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-route text-success"></i> Gestion des Voyages</h5>
+            </div>
+            <div class="card-body">
+                <p>Organisez et planifiez les voyages facilement.</p>
+                <div class="d-grid gap-2">
+                    <a href="{% url 'admin_trips_list' %}" class="btn btn-success">
+                        <i class="fas fa-list"></i> Voir tous les voyages
+                    </a>
+                    <a href="{% url 'admin_trip_create' %}" class="btn btn-outline-success">
+                        <i class="fas fa-plus"></i> Créer un nouveau voyage
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Interface complexe (optionnelle) -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card border-secondary">
+            <div class="card-header bg-secondary text-white">
+                <h6><i class="fas fa-cogs"></i> Interface Avancée (avec JavaScript)</h6>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">Pour les utilisateurs avancés qui préfèrent l'interface avec JavaScript.</p>
+                <a href="{% url 'admin_backoffice' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-external-link-alt"></i> Ouvrir l'interface complexe
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
